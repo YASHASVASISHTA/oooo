@@ -646,7 +646,7 @@
                     <div class="question-number" id="question-number">Question 1</div>
                     <div class="question-subject" id="question-subject">Physics</div>
                 </div>
-                <div class="question-timer" id="question-timer">00:00</div>
+                <div class="question-timer" id="question-timer">05:00</div>
             </div>
 
             <div class="question-text" id="question-text">
@@ -701,12 +701,12 @@
                 this.testSession = null;
                 this.currentQuestionIndex = 0;
                 this.examTimer = null;
-                this.questionTimers = {}; // Track time spent on each question
+                this.questionTimer = null;
                 this.examTimeLeft = 0;
+                this.questionTimeLeft = 300; // 5 minutes per question
                 this.autoSaveInterval = null;
                 this.isFullscreen = false;
                 this.exitAttempted = false;
-                this.questionTimerInterval = null;
 
                 this.initializeAuth();
                 this.loadTestSession();
@@ -745,12 +745,6 @@
                     this.testSession = JSON.parse(sessionStr);
                     this.examTimeLeft = this.testSession.testData.duration * 60; // Convert to seconds
                     this.currentQuestionIndex = this.testSession.currentQuestion || 0;
-                    
-                    // Initialize question timers if not exists
-                    if (!this.testSession.questionTimers) {
-                        this.testSession.questionTimers = {};
-                    }
-                    this.questionTimers = this.testSession.questionTimers;
                     
                     this.initializeInterface();
                 } catch (error) {
@@ -817,13 +811,8 @@
                 const questions = this.testSession.testData.questions_data;
                 if (index < 0 || index >= questions.length) return;
 
-                // Stop previous question timer
-                if (this.questionTimerInterval) {
-                    clearInterval(this.questionTimerInterval);
-                }
-
-                this.currentQuestionIndex = index;
                 const question = questions[index];
+                this.currentQuestionIndex = index;
 
                 // Update question display
                 document.getElementById('question-number').textContent = `Question ${index + 1}`;
@@ -856,37 +845,13 @@
                 this.updateControls();
                 this.updateQuestionNavigation();
                 
-                // Start/continue question timer
-                this.startQuestionTimer();
-                
+                // Reset question timer
+                this.questionTimeLeft = 300; // 5 minutes
+                this.updateQuestionTimer();
+
                 // Save current question to session
                 this.testSession.currentQuestion = index;
                 this.saveSession();
-            }
-
-            startQuestionTimer() {
-                // Initialize timer for this question if not exists
-                if (this.questionTimers[this.currentQuestionIndex] === undefined) {
-                    this.questionTimers[this.currentQuestionIndex] = 0;
-                }
-                
-                // Update timer display immediately
-                this.updateQuestionTimer();
-                
-                // Start interval to update timer every second
-                this.questionTimerInterval = setInterval(() => {
-                    this.questionTimers[this.currentQuestionIndex]++;
-                    this.updateQuestionTimer();
-                }, 1000);
-            }
-
-            updateQuestionTimer() {
-                const timeSpent = this.questionTimers[this.currentQuestionIndex] || 0;
-                const minutes = Math.floor(timeSpent / 60);
-                const seconds = timeSpent % 60;
-                
-                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('question-timer').textContent = timeString;
             }
 
             selectOption(optionIndex) {
@@ -954,14 +919,8 @@
                     document.getElementById('question-nav').classList.toggle('open');
                 });
 
-                // Fixed: Toggle navigation for both desktop and mobile
                 document.getElementById('nav-toggle').addEventListener('click', () => {
-                    const nav = document.getElementById('question-nav');
-                    if (window.innerWidth <= 768) {
-                        nav.classList.toggle('open');
-                    } else {
-                        nav.classList.toggle('collapsed');
-                    }
+                    document.getElementById('question-nav').classList.toggle('collapsed');
                 });
 
                 // Modal controls
@@ -1019,6 +978,17 @@
                         this.autoSubmitTest();
                     }
                 }, 1000);
+
+                // Question timer
+                this.questionTimer = setInterval(() => {
+                    this.questionTimeLeft--;
+                    this.updateQuestionTimer();
+                    
+                    if (this.questionTimeLeft <= 0) {
+                        // Auto move to next question
+                        this.navigateToQuestion(this.currentQuestionIndex + 1);
+                    }
+                }, 1000);
             }
 
             updateExamTimer() {
@@ -1033,6 +1003,22 @@
                 // Add warning class when less than 30 minutes
                 if (this.examTimeLeft <= 1800) {
                     timerElement.classList.add('warning');
+                }
+            }
+
+            updateQuestionTimer() {
+                const minutes = Math.floor(this.questionTimeLeft / 60);
+                const seconds = this.questionTimeLeft % 60;
+                
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const timerElement = document.getElementById('question-timer');
+                timerElement.textContent = timeString;
+                
+                // Add warning class when less than 1 minute
+                if (this.questionTimeLeft <= 60) {
+                    timerElement.classList.add('warning');
+                } else {
+                    timerElement.classList.remove('warning');
                 }
             }
 
@@ -1083,8 +1069,6 @@
             }
 
             saveSession() {
-                // Save question timers to session
-                this.testSession.questionTimers = this.questionTimers;
                 sessionStorage.setItem('test_session', JSON.stringify(this.testSession));
             }
 
@@ -1100,7 +1084,7 @@
                 });
 
                 // Prevent back button
-                window.addEventListener('popstate', (e) {
+                window.addEventListener('popstate', (e) => {
                     if (!this.exitAttempted) {
                         history.pushState(null, null, location.href);
                         this.showExitModal();
@@ -1132,7 +1116,7 @@
                 
                 // Clear timers
                 if (this.examTimer) clearInterval(this.examTimer);
-                if (this.questionTimerInterval) clearInterval(this.questionTimerInterval);
+                if (this.questionTimer) clearInterval(this.questionTimer);
                 if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
 
                 // Calculate results
@@ -1193,7 +1177,6 @@
                 return {
                     testData: this.testSession.testData,
                     answers: answers,
-                    questionTimers: this.questionTimers,
                     correct: correct,
                     incorrect: incorrect,
                     unanswered: unanswered,
@@ -1226,6 +1209,3 @@
     </script>
 </body>
 </html>
-
-
-
