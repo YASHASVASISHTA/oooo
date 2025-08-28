@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ExamAce</title>
+    <!-- Embedded CSS instead of external dependencies -->
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Color variables matching the design brief */
+        :root {
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --secondary-foreground: #374151;
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --muted: #f0fdf4;
+            --muted-foreground: #4b5563;
+            --border: #d1d5db;
+            --input: #e5e7eb;
+            --ring: #84cc16;
+        }
+
+        .container {
+            max-width: 28rem;
+            width: 100%;
+            margin: 0 1rem;
+        }
+
+        .card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        p {
+            color: var(--muted-foreground);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background-color: var(--input);
+            color: var(--foreground);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--foreground);
+        }
+
+        input[type="checkbox"] {
+            margin-right: 0.5rem;
+            accent-color: var(--primary);
+        }
+
+        .link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .link:hover {
+            color: #166534;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            background-color: #166534;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-secondary:hover {
+            background-color: #65a30d;
+        }
+
+        .divider {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        .divider-text {
+            background-color: var(--card);
+            color: var(--muted-foreground);
+            padding: 0 0.5rem;
+            font-size: 0.875rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 640px) {
+            .card {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.125rem;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="text-center mb-8">
+                <h1>ExamAce</h1>
+                <h2>Welcome Back</h2>
+                <p>Sign in to continue your exam preparation</p>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember">
+                        Remember me
+                    </label>
+                    <a href="#" class="link">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="divider">
+                <span class="divider-text">Demo Access</span>
+            </div>
+            
+            <button id="demo-login" class="btn btn-secondary">
+                Try Demo Account
+            </button>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm">
+                    Don't have an account? 
+                    <a href="#" class="link">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embedded JavaScript instead of external file -->
+    <script>
+        // Authentication functionality
+        class AuthManager {
+            constructor() {
+                this.initializeEventListeners();
+                this.checkExistingSession();
+            }
+
+            initializeEventListeners() {
+                const loginForm = document.getElementById('login-form');
+                const demoLoginBtn = document.getElementById('demo-login');
+
+                loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                demoLoginBtn.addEventListener('click', () => this.handleDemoLogin());
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const remember = document.getElementById('remember').checked;
+                const loginBtn = document.getElementById('login-btn');
+
+                // Show loading state
+                this.setLoadingState(loginBtn, true);
+
+                try {
+                    // Simulate API call
+                    await this.simulateLogin(email, password);
+                    
+                    // Store session
+                    const sessionData = {
+                        user: {
+                            email: email,
+                            name: email.split('@')[0],
+                            loginTime: new Date().toISOString()
+                        },
+                        remember: remember
+                    };
+
+                    if (remember) {
+                        localStorage.setItem('examace_session', JSON.stringify(sessionData));
+                    } else {
+                        sessionStorage.setItem('examace_session', JSON.stringify(sessionData));
+                    }
+
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
+                    
+                } catch (error) {
+                    this.showError('Invalid credentials. Please try again.');
+                } finally {
+                    this.setLoadingState(loginBtn, false);
+                }
+            }
+
+            async handleDemoLogin() {
+                const demoBtn = document.getElementById('demo-login');
+                this.setLoadingState(demoBtn, true);
+
+                try {
+                    // Demo credentials
+                    const demoSession = {
+                        user: {
+                            email: 'demo@examace.com',
+                            name: 'Demo User',
+                            loginTime: new Date().toISOString()
+                        },
+                        remember: false
+                    };
+
+                    sessionStorage.setItem('examace_session', JSON.stringify(demoSession));
+                    
+                    // Simulate loading time
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    window.location.href = 'dashboard.html';
+                    
+                } catch (error) {
+                    this.showError('Demo login failed. Please try again.');
+                } finally {
+                    this.setLoadingState(demoBtn, false);
+                }
+            }
+
+            async simulateLogin(email, password) {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Demo validation - accept any email with password "password"
+                if (password === 'password' || email === 'demo@examace.com') {
+                    return true;
+                }
+                
+                throw new Error('Invalid credentials');
+            }
+
+            setLoadingState(button, loading) {
+                if (loading) {
+                    button.classList.add('loading');
+                    button.innerHTML = '<span class="spinner"></span>Signing in...';
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                    
+                    if (button.id === 'login-btn') {
+                        button.innerHTML = 'Sign In';
+                    } else {
+                        button.innerHTML = 'Try Demo Account';
+                    }
+                }
+            }
+
+            showError(message) {
+                // Remove existing error
+                const existingError = document.querySelector('.error-message');
+                if (existingError) {
+                    existingError.remove();
+                }
+
+                // Create error element
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.style.cssText = `
+                    background-color: #fef2f2;
+                    border: 1px solid #fecaca;
+                    color: #dc2626;
+                    padding: 0.75rem;
+                    border-radius: 0.375rem;
+                    margin-bottom: 1rem;
+                    font-size: 0.875rem;
+                `;
+                errorDiv.textContent = message;
+
+                // Insert before form
+                const form = document.getElementById('login-form');
+                form.parentNode.insertBefore(errorDiv, form);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
+            }
+
+            checkExistingSession() {
+                const session = localStorage.getItem('examace_session') || 
+                               sessionStorage.getItem('examace_session');
+                
+                if (session) {
+                    try {
+                        const sessionData = JSON.parse(session);
+                        // If valid session exists, redirect to dashboard
+                        if (sessionData.user && sessionData.user.email) {
+                            window.location.href = 'dashboard.html';
+                        }
+                    } catch (error) {
+                        // Invalid session data, clear it
+                        localStorage.removeItem('examace_session');
+                        sessionStorage.removeItem('examace_session');
+                    }
+                }
+            }
+        }
+
+        // Initialize authentication when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AuthManager();
+        });
+
+        // Add some helpful demo information
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add demo credentials hint
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            emailInput.addEventListener('focus', () => {
+                if (!emailInput.value) {
+                    emailInput.placeholder = 'Try: demo@examace.com';
+                }
+            });
+            
+            passwordInput.addEventListener('focus', () => {
+                if (!passwordInput.value) {
+                    passwordInput.placeholder = 'Try: password';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

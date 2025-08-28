@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Instructions - ExamAce</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Color variables matching the design brief */
+        :root {
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --secondary-foreground: #374151;
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --muted: #f0fdf4;
+            --muted-foreground: #4b5563;
+            --border: #d1d5db;
+            --input: #e5e7eb;
+            --ring: #84cc16;
+            --destructive: #ea580c;
+            --destructive-foreground: #ffffff;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .test-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .test-meta {
+            color: var(--muted-foreground);
+            font-size: 1.125rem;
+        }
+
+        /* Test info card */
+        .test-info-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--background);
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .info-label {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Instructions */
+        .instructions {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .instructions h2 {
+            color: var(--foreground);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instructions-list {
+            list-style: none;
+            counter-reset: instruction-counter;
+        }
+
+        .instructions-list li {
+            counter-increment: instruction-counter;
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .instructions-list li::before {
+            content: counter(instruction-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Important notes */
+        .important-notes {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .important-notes h3 {
+            color: var(--destructive);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .important-notes ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+
+        .important-notes li {
+            margin-bottom: 0.5rem;
+            color: #dc2626;
+        }
+
+        /* Action buttons */
+        .action-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            background-color: #166534;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-secondary:hover {
+            background-color: #65a30d;
+        }
+
+        .btn-outline {
+            background: none;
+            border: 2px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--muted);
+            border-color: var(--primary);
+        }
+
+        /* Checkbox agreement */
+        .agreement-section {
+            background-color: var(--muted);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .agreement-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .agreement-checkbox input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--primary);
+        }
+
+        .agreement-text {
+            color: var(--foreground);
+            font-weight: 500;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .test-title {
+                font-size: 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .instructions-list li {
+                padding-left: 1.5rem;
+            }
+
+            .instructions-list li::before {
+                width: 1.25rem;
+                height: 1.25rem;
+                font-size: 0.625rem;
+            }
+        }
+
+        /* Loading and disabled states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+        }
+
+        .loading-spinner {
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="test-title" id="test-title">Test Instructions</h1>
+            <p class="test-meta" id="test-meta">Please read all instructions carefully before starting</p>
+        </header>
+
+        <!-- Test Info Card -->
+        <section class="test-info-card">
+            <div class="info-grid" id="test-info-grid">
+                <!-- Test info will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Instructions -->
+        <section class="instructions">
+            <h2>📋 General Instructions</h2>
+            <ol class="instructions-list">
+                <li>This test contains multiple choice questions. Each question has four options (A, B, C, D).</li>
+                <li>Select the most appropriate answer by clicking on the option.</li>
+                <li>You can navigate between questions using the question palette on the right side.</li>
+                <li>Questions can be marked for review and answered later.</li>
+                <li>The test will automatically submit when the time limit is reached.</li>
+                <li>You can submit the test manually at any time before the time limit.</li>
+                <li>Once submitted, you cannot make any changes to your answers.</li>
+                <li>Use the fullscreen mode for better focus and to avoid distractions.</li>
+                <li>Ensure stable internet connection throughout the test.</li>
+                <li>Do not refresh the page or use browser back/forward buttons during the test.</li>
+            </ol>
+        </section>
+
+        <!-- Important Notes -->
+        <section class="important-notes">
+            <h3>⚠️ Important Notes</h3>
+            <ul>
+                <li>Negative marking applies as per the test pattern</li>
+                <li>Calculator and other external tools are not allowed</li>
+                <li>Any attempt to switch tabs or applications will be recorded</li>
+                <li>The test will auto-save your progress every 30 seconds</li>
+                <li>In case of technical issues, contact support immediately</li>
+            </ul>
+        </section>
+
+        <!-- Agreement Section -->
+        <section class="agreement-section">
+            <div class="agreement-checkbox">
+                <input type="checkbox" id="agreement-checkbox">
+                <label for="agreement-checkbox" class="agreement-text">
+                    I have read and understood all the instructions and agree to the terms
+                </label>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="action-section">
+            <button class="btn btn-outline" onclick="goBack()">
+                ← Back to Tests
+            </button>
+            <button class="btn btn-secondary" onclick="previewTest()" id="preview-btn">
+                Preview Questions
+            </button>
+            <button class="btn btn-primary" onclick="startTest()" id="start-btn" disabled>
+                Start Test →
+            </button>
+        </section>
+    </div>
+
+    <script>
+        // Test instruction functionality
+        class TestInstructions {
+            constructor() {
+                this.testData = null;
+                this.initializeAuth();
+                this.loadTestData();
+                this.initializeEventListeners();
+            }
+
+            initializeAuth() {
+                // Check if user is logged in
+                const session = localStorage.getItem('examace_session') || 
+                               sessionStorage.getItem('examace_session');
+                
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                try {
+                    this.userData = JSON.parse(session);
+                } catch (error) {
+                    console.error('Invalid session data:', error);
+                    window.location.href = 'login.html';
+                }
+            }
+
+            loadTestData() {
+                // Get test data from session storage
+                const testDataStr = sessionStorage.getItem('current_test');
+                if (!testDataStr) {
+                    alert('No test selected. Redirecting to test selection.');
+                    window.location.href = 'test-selection.html';
+                    return;
+                }
+
+                try {
+                    this.testData = JSON.parse(testDataStr);
+                    this.populateTestInfo();
+                } catch (error) {
+                    console.error('Invalid test data:', error);
+                    window.location.href = 'test-selection.html';
+                }
+            }
+
+            populateTestInfo() {
+                if (!this.testData) return;
+
+                // Update title and meta
+                document.getElementById('test-title').textContent = this.testData.title;
+                document.getElementById('test-meta').textContent = 
+                    `${this.testData.type} • ${this.testData.subjects.join(', ')}`;
+
+                // Populate test info grid
+                const durationHours = Math.floor(this.testData.duration / 60);
+                const durationMinutes = this.testData.duration % 60;
+                const durationText = durationHours > 0 
+                    ? `${durationHours}h ${durationMinutes}m`
+                    : `${durationMinutes}m`;
+
+                const infoGrid = document.getElementById('test-info-grid');
+                infoGrid.innerHTML = `
+                    <div class="info-item">
+                        <span class="info-value">${durationText}</span>
+                        <div class="info-label">Duration</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-value">${this.testData.questions}</span>
+                        <div class="info-label">Questions</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-value">${this.testData.marks}</span>
+                        <div class="info-label">Total Marks</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-value">${this.testData.negativeMarks > 0 ? `-${this.testData.negativeMarks}` : 'No'}</span>
+                        <div class="info-label">Negative Marking</div>
+                    </div>
+                `;
+            }
+
+            initializeEventListeners() {
+                // Agreement checkbox
+                const agreementCheckbox = document.getElementById('agreement-checkbox');
+                const startBtn = document.getElementById('start-btn');
+
+                agreementCheckbox.addEventListener('change', () => {
+                    startBtn.disabled = !agreementCheckbox.checked;
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !startBtn.disabled) {
+                        this.startTest();
+                    }
+                    if (e.key === 'Escape') {
+                        this.goBack();
+                    }
+                });
+            }
+
+            startTest() {
+                const startBtn = document.getElementById('start-btn');
+                
+                // Show loading state
+                startBtn.innerHTML = '<span class="loading-spinner"></span>Starting Test...';
+                startBtn.disabled = true;
+
+                // Simulate loading time
+                setTimeout(() => {
+                    // Store test start time
+                    const testSession = {
+                        testData: this.testData,
+                        startTime: new Date().toISOString(),
+                        answers: {},
+                        markedForReview: [],
+                        currentQuestion: 0
+                    };
+
+                    sessionStorage.setItem('test_session', JSON.stringify(testSession));
+                    
+                    // Navigate to test interface
+                    window.location.href = 'test.html';
+                }, 1500);
+            }
+
+            previewTest() {
+                if (!this.testData || !this.testData.questions_data) {
+                    alert('No preview available for this test.');
+                    return;
+                }
+
+                const sampleQuestions = this.testData.questions_data.slice(0, 3);
+                let previewText = `Preview of ${this.testData.title}\n\n`;
+                
+                sampleQuestions.forEach((q, index) => {
+                    previewText += `Question ${index + 1} (${q.subject}):\n`;
+                    previewText += `${q.questionText}\n\n`;
+                    q.options.forEach((option, optIndex) => {
+                        previewText += `${String.fromCharCode(65 + optIndex)}) ${option}\n`;
+                    });
+                    previewText += `\n`;
+                });
+
+                previewText += `This is a sample of the questions you'll encounter in the actual test.`;
+                
+                alert(previewText);
+            }
+
+            goBack() {
+                if (confirm('Are you sure you want to go back? You will need to select the test again.')) {
+                    sessionStorage.removeItem('current_test');
+                    window.location.href = 'test-selection.html';
+                }
+            }
+        }
+
+        // Global functions for button onclick handlers
+        function startTest() {
+            if (window.testInstructions) {
+                window.testInstructions.startTest();
+            }
+        }
+
+        function previewTest() {
+            if (window.testInstructions) {
+                window.testInstructions.previewTest();
+            }
+        }
+
+        function goBack() {
+            if (window.testInstructions) {
+                window.testInstructions.goBack();
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.testInstructions = new TestInstructions();
+        });
+    </script>
+</body>
+</html>
