@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ExamAce</title>
-    <!-- Embedded CSS instead of external dependencies -->
     <style>
         /* Reset and base styles */
         * {
@@ -13,128 +12,112 @@
             box-sizing: border-box;
         }
 
+        html {
+            height: 100%;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #374151;
-            background-color: #ffffff;
+            /* Enhanced background */
+            background: linear-gradient(135deg, #e0f2f1 0%, #f0fdf4 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
-        /* Color variables matching the design brief */
+        /* Color variables */
         :root {
             --primary: #15803d;
             --primary-foreground: #ffffff;
             --secondary: #84cc16;
-            --secondary-foreground: #374151;
-            --background: #ffffff;
+            --card: #ffffff;
             --foreground: #374151;
-            --card: #f0fdf4;
-            --card-foreground: #374151;
-            --muted: #f0fdf4;
-            --muted-foreground: #4b5563;
+            --muted-foreground: #6b7280;
             --border: #d1d5db;
-            --input: #e5e7eb;
+            --input-bg: #f9fafb;
             --ring: #84cc16;
         }
 
-        .container {
-            max-width: 28rem;
+        .login-container {
+            max-width: 26rem;
             width: 100%;
-            margin: 0 1rem;
         }
-
+        
+        /* Card styling with animations */
         .card {
             background-color: var(--card);
             border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem; /* More rounded corners */
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-10px);
+            animation: float-in 0.6s ease-out forwards;
+            opacity: 0;
         }
 
-        .text-center {
-            text-align: center;
+        @keyframes float-in {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        .mb-8 {
-            margin-bottom: 2rem;
-        }
-
-        .mb-6 {
-            margin-bottom: 1.5rem;
-        }
-
-        .mb-4 {
-            margin-bottom: 1rem;
-        }
-
-        .mb-2 {
-            margin-bottom: 0.5rem;
-        }
-
-        .mt-4 {
-            margin-top: 1rem;
-        }
-
-        .mt-6 {
-            margin-top: 1.5rem;
-        }
-
-        h1 {
-            font-size: 1.875rem;
-            font-weight: 700;
+        .text-center { text-align: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        /* Header styling */
+        .card-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
             color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
-        h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--foreground);
-        }
-
-        p {
+        .card-header p {
             color: var(--muted-foreground);
+            font-size: 1rem;
         }
 
+        /* Form styling with icons */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
         }
 
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--foreground);
-            margin-bottom: 0.5rem;
+        .form-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-foreground);
+            pointer-events: none;
         }
 
-        input[type="email"],
-        input[type="password"] {
+        .form-input {
             width: 100%;
-            padding: 0.5rem 0.75rem;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* Space for icon */
             border: 1px solid var(--border);
             border-radius: 0.375rem;
-            background-color: var(--input);
+            background-color: var(--input-bg);
             color: var(--foreground);
             font-size: 1rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        input[type="email"]:focus,
-        input[type="password"]:focus {
+        .form-input:focus {
             outline: none;
             border-color: var(--ring);
-            box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+            box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.2);
         }
-
-        .checkbox-group {
+        
+        .form-options {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
         }
 
@@ -143,361 +126,221 @@
             align-items: center;
             font-size: 0.875rem;
             color: var(--foreground);
+            cursor: pointer;
         }
 
-        input[type="checkbox"] {
+        .checkbox-label input[type="checkbox"] {
             margin-right: 0.5rem;
             accent-color: var(--primary);
+            width: 1rem;
+            height: 1rem;
         }
 
-        .link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
-
-        .link:hover {
-            color: #166534;
-        }
-
+        /* Button styling */
         .btn {
             width: 100%;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             border: none;
             border-radius: 0.375rem;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-primary {
             background-color: var(--primary);
             color: var(--primary-foreground);
+            box-shadow: 0 4px 6px -1px rgba(21, 128, 61, 0.2), 0 2px 4px -1px rgba(21, 128, 61, 0.12);
         }
 
         .btn-primary:hover {
             background-color: #166534;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 10px -3px rgba(21, 128, 61, 0.3), 0 4px 6px -2px rgba(21, 128, 61, 0.15);
         }
 
-        .btn-secondary {
-            background-color: var(--secondary);
-            color: var(--secondary-foreground);
-        }
-
-        .btn-secondary:hover {
-            background-color: #65a30d;
-        }
-
-        .divider {
-            position: relative;
-            margin: 1.5rem 0;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: var(--border);
-        }
-
-        .divider-text {
-            background-color: var(--card);
-            color: var(--muted-foreground);
-            padding: 0 0.5rem;
-            font-size: 0.875rem;
-            position: relative;
-            display: inline-block;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .text-sm {
-            font-size: 0.875rem;
-        }
-
-        /* Responsive design */
-        @media (max-width: 640px) {
-            .card {
-                padding: 1.5rem;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
-            
-            h2 {
-                font-size: 1.125rem;
-            }
-        }
-
-        /* Loading state */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
+        /* Loading spinner */
         .spinner {
             display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--primary-foreground);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 0.5rem;
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="login-container">
         <div class="card">
-            <div class="text-center mb-8">
+            <div class="text-center mb-8 card-header">
                 <h1>ExamAce</h1>
-                <h2>Welcome Back</h2>
-                <p>Sign in to continue your exam preparation</p>
+                <p>Sign in to continue your preparation</p>
             </div>
 
-            <form id="login-form">
+            <form id="login-form" novalidate>
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                    <span class="form-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z"/>
+                        </svg>
+                    </span>
+                    <input type="email" id="email" class="form-input" required placeholder="Email Address">
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <span class="form-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                        </svg>
+                    </span>
+                    <input type="password" id="password" class="form-input" required placeholder="Password">
                 </div>
-                <div class="checkbox-group">
+
+                <div class="form-options">
                     <label class="checkbox-label">
                         <input type="checkbox" id="remember">
                         Remember me
                     </label>
-                    <a href="#" class="link">Forgot password?</a>
                 </div>
+                
                 <button type="submit" class="btn btn-primary" id="login-btn">
-                    Sign In
+                    <span>Sign In</span>
                 </button>
             </form>
-
-            <div class="divider">
-                <span class="divider-text">Demo Access</span>
-            </div>
-            
-            <button id="demo-login" class="btn btn-secondary">
-                Try Demo Account
-            </button>
-
-            <div class="mt-6 text-center">
-                <p class="text-sm">
-                    Don't have an account? 
-                    <a href="#" class="link">Sign up</a>
-                </p>
-            </div>
         </div>
     </div>
 
-    <!-- Embedded JavaScript instead of external file -->
-    <script>
-        // Authentication functionality
-        class AuthManager {
-            constructor() {
-                this.initializeEventListeners();
-                this.checkExistingSession();
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      
+        const firebaseConfig = {
+          apiKey: "AIzaSyCQ34ZAWWCMuaQ01fvX0sI-YdklK0mJ5aw",
+          authDomain: "testseries-38752.firebaseapp.com",
+          projectId: "testseries-38752",
+          storageBucket: "testseries-38752.firebasestorage.app",
+          messagingSenderId: "519384534407",
+          appId: "1:519384534407:web:201265a9d703708334d722",
+          measurementId: "G-XBHHK5W8VE"
+        };
+      
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // --- AUTHENTICATION LOGIC ---
+
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const rememberCheckbox = document.getElementById('remember');
+
+        // Check if user is already signed in (respecting persistence)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User already signed in. Redirecting...");
+                window.location.href = 'dashboard.html';
+            } else {
+                console.log("No user signed in.");
             }
+        });
 
-            initializeEventListeners() {
-                const loginForm = document.getElementById('login-form');
-                const demoLoginBtn = document.getElementById('demo-login');
+        // Handle login form submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-                loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-                demoLoginBtn.addEventListener('click', () => this.handleDemoLogin());
-            }
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const persistenceType = rememberCheckbox.checked ? browserLocalPersistence : browserSessionPersistence;
 
-            async handleLogin(e) {
-                e.preventDefault();
-                
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const remember = document.getElementById('remember').checked;
-                const loginBtn = document.getElementById('login-btn');
+            setLoadingState(true);
 
-                // Show loading state
-                this.setLoadingState(loginBtn, true);
-
-                try {
-                    // Simulate API call
-                    await this.simulateLogin(email, password);
-                    
-                    // Store session
+            // Set persistence BEFORE signing in
+            setPersistence(auth, persistenceType)
+                .then(() => {
+                    // Now, sign in the user
+                    return signInWithEmailAndPassword(auth, email, password);
+                })
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    // Create a simple session object for compatibility with other pages
                     const sessionData = {
                         user: {
-                            email: email,
-                            name: email.split('@')[0],
-                            loginTime: new Date().toISOString()
-                        },
-                        remember: remember
-                    };
-
-                    if (remember) {
-                        localStorage.setItem('examace_session', JSON.stringify(sessionData));
-                    } else {
-                        sessionStorage.setItem('examace_session', JSON.stringify(sessionData));
-                    }
-
-                    // Redirect to dashboard
-                    window.location.href = 'dashboard.html';
-                    
-                } catch (error) {
-                    this.showError('Invalid credentials. Please try again.');
-                } finally {
-                    this.setLoadingState(loginBtn, false);
-                }
-            }
-
-            async handleDemoLogin() {
-                const demoBtn = document.getElementById('demo-login');
-                this.setLoadingState(demoBtn, true);
-
-                try {
-                    // Demo credentials
-                    const demoSession = {
-                        user: {
-                            email: 'demo@examace.com',
-                            name: 'Demo User',
-                            loginTime: new Date().toISOString()
-                        },
-                        remember: false
-                    };
-
-                    sessionStorage.setItem('examace_session', JSON.stringify(demoSession));
-                    
-                    // Simulate loading time
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    window.location.href = 'dashboard.html';
-                    
-                } catch (error) {
-                    this.showError('Demo login failed. Please try again.');
-                } finally {
-                    this.setLoadingState(demoBtn, false);
-                }
-            }
-
-            async simulateLogin(email, password) {
-                // Simulate API call delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Demo validation - accept any email with password "password"
-                if (password === 'password' || email === 'demo@examace.com') {
-                    return true;
-                }
-                
-                throw new Error('Invalid credentials');
-            }
-
-            setLoadingState(button, loading) {
-                if (loading) {
-                    button.classList.add('loading');
-                    button.innerHTML = '<span class="spinner"></span>Signing in...';
-                    button.disabled = true;
-                } else {
-                    button.classList.remove('loading');
-                    button.disabled = false;
-                    
-                    if (button.id === 'login-btn') {
-                        button.innerHTML = 'Sign In';
-                    } else {
-                        button.innerHTML = 'Try Demo Account';
-                    }
-                }
-            }
-
-            showError(message) {
-                // Remove existing error
-                const existingError = document.querySelector('.error-message');
-                if (existingError) {
-                    existingError.remove();
-                }
-
-                // Create error element
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.style.cssText = `
-                    background-color: #fef2f2;
-                    border: 1px solid #fecaca;
-                    color: #dc2626;
-                    padding: 0.75rem;
-                    border-radius: 0.375rem;
-                    margin-bottom: 1rem;
-                    font-size: 0.875rem;
-                `;
-                errorDiv.textContent = message;
-
-                // Insert before form
-                const form = document.getElementById('login-form');
-                form.parentNode.insertBefore(errorDiv, form);
-
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    if (errorDiv.parentNode) {
-                        errorDiv.remove();
-                    }
-                }, 5000);
-            }
-
-            checkExistingSession() {
-                const session = localStorage.getItem('examace_session') || 
-                               sessionStorage.getItem('examace_session');
-                
-                if (session) {
-                    try {
-                        const sessionData = JSON.parse(session);
-                        // If valid session exists, redirect to dashboard
-                        if (sessionData.user && sessionData.user.email) {
-                            window.location.href = 'dashboard.html';
+                            email: user.email,
+                            name: user.displayName || user.email.split('@')[0],
+                            uid: user.uid
                         }
-                    } catch (error) {
-                        // Invalid session data, clear it
-                        localStorage.removeItem('examace_session');
-                        sessionStorage.removeItem('examace_session');
-                    }
-                }
+                    };
+                    sessionStorage.setItem('examace_session', JSON.stringify(sessionData));
+                    window.location.href = 'dashboard.html';
+                })
+                .catch((error) => {
+                    handleAuthError(error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
+                });
+        });
+
+        // --- HELPER FUNCTIONS ---
+
+        function handleAuthError(error) {
+            console.error(`Login Error (${error.code}):`, error.message);
+            let friendlyMessage = "An error occurred. Please try again.";
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                friendlyMessage = "Invalid credentials. Please check your email and password.";
+            } else if (error.code === 'auth/invalid-email') {
+                friendlyMessage = "Please enter a valid email address.";
+            }
+            showError(friendlyMessage);
+        }
+
+        function setLoadingState(loading) {
+            const btnContent = loginBtn.querySelector('span');
+            if (loading) {
+                loginBtn.disabled = true;
+                btnContent.style.display = 'none';
+                const spinner = document.createElement('div');
+                spinner.className = 'spinner';
+                loginBtn.prepend(spinner);
+            } else {
+                loginBtn.disabled = false;
+                btnContent.style.display = 'inline';
+                const spinner = loginBtn.querySelector('.spinner');
+                if(spinner) spinner.remove();
             }
         }
 
-        // Initialize authentication when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new AuthManager();
-        });
+        function showError(message) {
+            const existingError = document.querySelector('.error-message');
+            if (existingError) existingError.remove();
 
-        // Add some helpful demo information
-        document.addEventListener('DOMContentLoaded', () => {
-            // Add demo credentials hint
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.cssText = `
+                background-color: #fef2f2;
+                border: 1px solid #fecaca;
+                color: #dc2626;
+                padding: 0.75rem;
+                border-radius: 0.375rem;
+                margin-bottom: 1rem;
+                font-size: 0.875rem;
+                text-align: center;
+            `;
+            errorDiv.textContent = message;
+            loginForm.parentNode.insertBefore(errorDiv, loginForm);
             
-            emailInput.addEventListener('focus', () => {
-                if (!emailInput.value) {
-                    emailInput.placeholder = 'Try: demo@examace.com';
-                }
-            });
-            
-            passwordInput.addEventListener('focus', () => {
-                if (!passwordInput.value) {
-                    passwordInput.placeholder = 'Try: password';
-                }
-            });
-        });
+            setTimeout(() => { if (errorDiv.parentNode) errorDiv.remove(); }, 5000);
+        }
     </script>
 </body>
 </html>
