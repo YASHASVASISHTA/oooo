@@ -319,26 +319,6 @@
             border: 2px solid var(--border);
         }
 
-        /* Add to mobile responsive section */
-@media (max-width: 768px) {
-    .question-nav.collapsed {
-        transform: translateX(-100%);
-    }
-    
-    .question-nav.open {
-        transform: translateX(0);
-    }
-    
-    /* Ensure the nav toggle button is visible when sidebar is open */
-    .question-nav.open ~ .mobile-nav-toggle {
-        left: calc(320px + 1rem);
-    }
-}
-
-/* Add to make the transition smoother */
-.question-nav {
-    transition: transform 0.3s ease;
-}
         .question-timer.warning {
             background-color: var(--warning);
             color: var(--warning-foreground);
@@ -714,21 +694,6 @@
         </div>
     </div>
 
-   <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Interface - ExamAce</title>
-    <style>
-        /* Your CSS styles remain exactly the same */
-        /* ... (all the CSS code you provided) ... */
-    </style>
-</head>
-<body>
-    <!-- Your HTML structure remains exactly the same -->
-    <!-- ... (all the HTML code you provided) ... -->
-
     <script>
         // Test Interface Class
         class TestInterface {
@@ -921,11 +886,34 @@
                 }
             }
 
+
+            closeSidebar() {
+    const questionNav = document.getElementById('question-nav');
+    const mobileToggleBtn = document.getElementById('mobile-nav-toggle');
+    const navToggleBtn = document.getElementById('nav-toggle');
+    
+    // Close sidebar on mobile
+    if (window.innerWidth <= 768) {
+        questionNav.classList.remove('open');
+        mobileToggleBtn.textContent = '☰';
+    } 
+    // Collapse sidebar on desktop
+    else {
+        questionNav.classList.add('collapsed');
+        navToggleBtn.textContent = '→';
+    }
+}
+
+
             initializeEventListeners() {
-                // Navigation controls
-                document.getElementById('prev-btn').addEventListener('click', () => {
-                    this.navigateToQuestion(this.currentQuestionIndex - 1);
-                });
+      // Navigation controls
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        // Close sidebar when back button is clicked
+        this.closeSidebar();
+        this.navigateToQuestion(this.currentQuestionIndex - 1);
+    });
+
+    // ... rest of the existing code ...
 
                 document.getElementById('save-next-btn').addEventListener('click', () => {
                     this.navigateToQuestion(this.currentQuestionIndex + 1);
@@ -949,32 +937,13 @@
                     this.showSubmitModal();
                 });
 
-                // Mobile navigation - FIXED
+                // Mobile navigation
                 document.getElementById('mobile-nav-toggle').addEventListener('click', () => {
-                    const questionNav = document.getElementById('question-nav');
-                    questionNav.classList.toggle('open');
-                    
-                    // Update the toggle button text based on state
-                    const mobileToggleBtn = document.getElementById('mobile-nav-toggle');
-                    if (questionNav.classList.contains('open')) {
-                        mobileToggleBtn.textContent = '✕';
-                    } else {
-                        mobileToggleBtn.textContent = '☰';
-                    }
+                    document.getElementById('question-nav').classList.toggle('open');
                 });
 
-                // Desktop navigation - FIXED
                 document.getElementById('nav-toggle').addEventListener('click', () => {
-                    const questionNav = document.getElementById('question-nav');
-                    questionNav.classList.toggle('collapsed');
-                    
-                    // Update the toggle button direction based on state
-                    const navToggleBtn = document.getElementById('nav-toggle');
-                    if (questionNav.classList.contains('collapsed')) {
-                        navToggleBtn.textContent = '→';
-                    } else {
-                        navToggleBtn.textContent = '←';
-                    }
+                    document.getElementById('question-nav').classList.toggle('collapsed');
                 });
 
                 // Modal controls
@@ -992,20 +961,6 @@
 
                 document.getElementById('confirm-exit').addEventListener('click', () => {
                     this.submitTest();
-                });
-
-                // Handle window resize to ensure proper sidebar behavior
-                window.addEventListener('resize', () => {
-                    const questionNav = document.getElementById('question-nav');
-                    const mobileToggleBtn = document.getElementById('mobile-nav-toggle');
-                    
-                    // If we're on a larger screen, ensure mobile nav is closed and not collapsed
-                    if (window.innerWidth > 768) {
-                        questionNav.classList.remove('open');
-                        mobileToggleBtn.textContent = '☰';
-                        questionNav.classList.remove('collapsed');
-                        document.getElementById('nav-toggle').textContent = '←';
-                    }
                 });
 
                 // Keyboard shortcuts
@@ -1275,7 +1230,5 @@
             }
         });
     </script>
-</body>
-</html>
 </body>
 </html>
