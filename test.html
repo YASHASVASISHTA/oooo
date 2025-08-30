@@ -155,10 +155,7 @@
             overflow-y: auto;
             height: calc(100vh - 60px);
             transition: transform 0.3s ease;
-        }
-
-        .question-nav.collapsed {
-            transform: translateX(-100%);
+            flex-shrink: 0;
         }
 
         .nav-header {
@@ -182,6 +179,27 @@
             cursor: pointer;
             font-size: 1.25rem;
             padding: 0.25rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* Styles for the collapsed sidebar on desktop */
+        .question-nav.collapsed {
+            transform: translateX(calc(-100% + 55px));
+        }
+
+        .question-nav.collapsed .nav-toggle {
+            transform: rotate(180deg);
+        }
+        
+        .question-nav .nav-header span, .question-nav .question-grid, .question-nav .nav-legend {
+            transition: opacity 0.2s ease-in-out;
+        }
+        
+        .question-nav.collapsed .nav-header span,
+        .question-nav.collapsed .question-grid,
+        .question-nav.collapsed .nav-legend {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .question-grid {
@@ -271,9 +289,10 @@
             color: var(--primary-foreground);
             border: none;
             border-radius: 0.375rem;
-            padding: 0.5rem;
+            padding: 0.5rem 0.75rem;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         /* Question display */
@@ -317,12 +336,6 @@
             font-family: 'Courier New', monospace;
             font-weight: 600;
             border: 2px solid var(--border);
-        }
-
-        .question-timer.warning {
-            background-color: var(--warning);
-            color: var(--warning-foreground);
-            border-color: var(--warning);
         }
 
         .question-text {
@@ -457,7 +470,7 @@
                 position: fixed;
                 top: 60px;
                 left: 0;
-                z-index: 50;
+                z-index: 101; /* Higher z-index to appear above content */
                 width: 100%;
                 max-width: 320px;
                 height: calc(100vh - 60px);
@@ -468,13 +481,19 @@
             .question-nav.open {
                 transform: translateX(0);
             }
+            
+            /* Remove desktop-only collapse behavior on mobile */
+            .question-nav.collapsed {
+                transform: translateX(-100%);
+            }
 
             .mobile-nav-toggle {
                 display: block;
             }
 
             .question-content {
-                padding: 1rem;
+                /* Increased padding-top to avoid overlap from mobile nav toggle button */
+                padding: 4.5rem 1rem 1rem 1rem;
             }
 
             .question-header {
@@ -646,7 +665,7 @@
                     <div class="question-number" id="question-number">Question 1</div>
                     <div class="question-subject" id="question-subject">Physics</div>
                 </div>
-                <div class="question-timer" id="question-timer">05:00</div>
+                <div class="question-timer" id="question-timer">00:00</div>
             </div>
 
             <div class="question-text" id="question-text">
@@ -703,7 +722,7 @@
                 this.examTimer = null;
                 this.questionTimer = null;
                 this.examTimeLeft = 0;
-                this.questionTimeLeft = 300; // 5 minutes per question
+                this.questionTimeSpent = 0; // Tracks time for the currently displayed question
                 this.autoSaveInterval = null;
                 this.isFullscreen = false;
                 this.exitAttempted = false;
@@ -718,7 +737,7 @@
 
             initializeAuth() {
                 const session = localStorage.getItem('examace_session') || 
-                               sessionStorage.getItem('examace_session');
+                                sessionStorage.getItem('examace_session');
                 
                 if (!session) {
                     window.location.href = 'login.html';
@@ -743,9 +762,14 @@
 
                 try {
                     this.testSession = JSON.parse(sessionStr);
-                    this.examTimeLeft = this.testSession.testData.duration * 60; // Convert to seconds
+                    this.examTimeLeft = this.testSession.testData.duration * 60;
                     this.currentQuestionIndex = this.testSession.currentQuestion || 0;
                     
+                    // Initialize timeSpent array if it doesn't exist
+                    if (!this.testSession.timeSpent) {
+                        this.testSession.timeSpent = new Array(this.testSession.testData.questions_data.length).fill(0);
+                    }
+
                     this.initializeInterface();
                 } catch (error) {
                     console.error('Invalid test session:', error);
@@ -754,16 +778,9 @@
             }
 
             initializeInterface() {
-                // Set test title
                 document.getElementById('test-title').textContent = this.testSession.testData.title;
-                
-                // Generate question navigation
                 this.generateQuestionNavigation();
-                
-                // Load current question
                 this.loadQuestion(this.currentQuestionIndex);
-                
-                // Update exam timer display
                 this.updateExamTimer();
             }
 
@@ -776,7 +793,6 @@
                     return `<div class="question-nav-item" data-question="${index}">${questionNum}</div>`;
                 }).join('');
 
-                // Add click listeners
                 questionGrid.querySelectorAll('.question-nav-item').forEach(item => {
                     item.addEventListener('click', () => {
                         const questionIndex = parseInt(item.dataset.question);
@@ -789,21 +805,11 @@
 
             updateQuestionNavigation() {
                 const navItems = document.querySelectorAll('.question-nav-item');
-                
                 navItems.forEach((item, index) => {
                     item.classList.remove('current', 'answered', 'marked');
-                    
-                    if (index === this.currentQuestionIndex) {
-                        item.classList.add('current');
-                    }
-                    
-                    if (this.testSession.answers[index] !== undefined) {
-                        item.classList.add('answered');
-                    }
-                    
-                    if (this.testSession.markedForReview.includes(index)) {
-                        item.classList.add('marked');
-                    }
+                    if (index === this.currentQuestionIndex) item.classList.add('current');
+                    if (this.testSession.answers[index] !== undefined) item.classList.add('answered');
+                    if (this.testSession.markedForReview.includes(index)) item.classList.add('marked');
                 });
             }
 
@@ -811,69 +817,52 @@
                 const questions = this.testSession.testData.questions_data;
                 if (index < 0 || index >= questions.length) return;
 
-                const question = questions[index];
                 this.currentQuestionIndex = index;
+                const question = questions[index];
 
-                // Update question display
                 document.getElementById('question-number').textContent = `Question ${index + 1}`;
                 document.getElementById('question-subject').textContent = question.subject;
                 document.getElementById('question-text').textContent = question.questionText;
 
-                // Generate options
                 const optionsContainer = document.getElementById('options-container');
                 optionsContainer.innerHTML = question.options.map((option, optIndex) => {
                     const letter = String.fromCharCode(65 + optIndex);
                     const isSelected = this.testSession.answers[index] === optIndex;
-                    
                     return `
                         <div class="option ${isSelected ? 'selected' : ''}" data-option="${optIndex}">
                             <div class="option-label">${letter}</div>
                             <div class="option-text">${option}</div>
-                        </div>
-                    `;
+                        </div>`;
                 }).join('');
 
-                // Add option click listeners
                 optionsContainer.querySelectorAll('.option').forEach(option => {
                     option.addEventListener('click', () => {
-                        const optionIndex = parseInt(option.dataset.option);
-                        this.selectOption(optionIndex);
+                        this.selectOption(parseInt(option.dataset.option));
                     });
                 });
 
-                // Update controls
                 this.updateControls();
                 this.updateQuestionNavigation();
                 
-                // Reset question timer
-                this.questionTimeLeft = 300; // 5 minutes
-                this.updateQuestionTimer();
+                this.startQuestionTimer();
 
-                // Save current question to session
                 this.testSession.currentQuestion = index;
                 this.saveSession();
             }
 
             selectOption(optionIndex) {
-                // Update UI
                 document.querySelectorAll('.option').forEach((opt, idx) => {
                     opt.classList.toggle('selected', idx === optionIndex);
                 });
-
-                // Save answer
                 this.testSession.answers[this.currentQuestionIndex] = optionIndex;
                 this.updateQuestionNavigation();
                 this.saveSession();
             }
 
             updateControls() {
-                const prevBtn = document.getElementById('prev-btn');
+                document.getElementById('prev-btn').disabled = this.currentQuestionIndex === 0;
+                
                 const markReviewBtn = document.getElementById('mark-review-btn');
-                
-                // Update previous button
-                prevBtn.disabled = this.currentQuestionIndex === 0;
-                
-                // Update mark for review button
                 const isMarked = this.testSession.markedForReview.includes(this.currentQuestionIndex);
                 markReviewBtn.textContent = isMarked ? '🔖 Unmark Review' : '🔖 Mark for Review';
                 markReviewBtn.classList.toggle('btn-warning', !isMarked);
@@ -887,69 +876,40 @@
             }
 
             initializeEventListeners() {
-                // Navigation controls
-                document.getElementById('prev-btn').addEventListener('click', () => {
-                    this.navigateToQuestion(this.currentQuestionIndex - 1);
-                });
-
-                document.getElementById('save-next-btn').addEventListener('click', () => {
-                    this.navigateToQuestion(this.currentQuestionIndex + 1);
-                });
-
+                document.getElementById('prev-btn').addEventListener('click', () => this.navigateToQuestion(this.currentQuestionIndex - 1));
+                document.getElementById('save-next-btn').addEventListener('click', () => this.navigateToQuestion(this.currentQuestionIndex + 1));
+                
                 document.getElementById('clear-btn').addEventListener('click', () => {
                     delete this.testSession.answers[this.currentQuestionIndex];
                     this.loadQuestion(this.currentQuestionIndex);
                 });
 
-                document.getElementById('mark-review-btn').addEventListener('click', () => {
-                    this.toggleMarkForReview();
-                });
+                document.getElementById('mark-review-btn').addEventListener('click', () => this.toggleMarkForReview());
+                document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+                document.getElementById('submit-btn').addEventListener('click', () => this.showSubmitModal());
 
-                // Header controls
-                document.getElementById('fullscreen-btn').addEventListener('click', () => {
-                    this.toggleFullscreen();
-                });
-
-                document.getElementById('submit-btn').addEventListener('click', () => {
-                    this.showSubmitModal();
-                });
-
-                // Mobile navigation
+                // Sidebar Toggles
                 document.getElementById('mobile-nav-toggle').addEventListener('click', () => {
                     document.getElementById('question-nav').classList.toggle('open');
                 });
-
                 document.getElementById('nav-toggle').addEventListener('click', () => {
-                    document.getElementById('question-nav').classList.toggle('collapsed');
+                    const nav = document.getElementById('question-nav');
+                    nav.classList.toggle('collapsed'); // For desktop view
+                    nav.classList.remove('open');       // For mobile view
                 });
 
-                // Modal controls
-                document.getElementById('cancel-submit').addEventListener('click', () => {
-                    this.hideSubmitModal();
-                });
-
-                document.getElementById('confirm-submit').addEventListener('click', () => {
-                    this.submitTest();
-                });
-
-                document.getElementById('cancel-exit').addEventListener('click', () => {
-                    this.hideExitModal();
-                });
-
-                document.getElementById('confirm-exit').addEventListener('click', () => {
-                    this.submitTest();
-                });
+                // Modals
+                document.getElementById('cancel-submit').addEventListener('click', () => this.hideSubmitModal());
+                document.getElementById('confirm-submit').addEventListener('click', () => this.submitTest());
+                document.getElementById('cancel-exit').addEventListener('click', () => this.hideExitModal());
+                document.getElementById('confirm-exit').addEventListener('click', () => this.submitTest());
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' && !e.ctrlKey) {
-                        this.navigateToQuestion(this.currentQuestionIndex - 1);
-                    } else if (e.key === 'ArrowRight' && !e.ctrlKey) {
-                        this.navigateToQuestion(this.currentQuestionIndex + 1);
-                    } else if (e.key >= '1' && e.key <= '4') {
-                        const optionIndex = parseInt(e.key) - 1;
-                        this.selectOption(optionIndex);
-                    } else if (e.key === 'F11') {
+                    if (e.key === 'ArrowLeft' && !e.ctrlKey) this.navigateToQuestion(this.currentQuestionIndex - 1);
+                    else if (e.key === 'ArrowRight' && !e.ctrlKey) this.navigateToQuestion(this.currentQuestionIndex + 1);
+                    else if (e.key >= '1' && e.key <= '4') this.selectOption(parseInt(e.key) - 1);
+                    else if (e.key === 'F11') {
                         e.preventDefault();
                         this.toggleFullscreen();
                     }
@@ -969,25 +929,30 @@
             }
 
             startTimers() {
-                // Exam timer
+                // Exam timer (overall)
                 this.examTimer = setInterval(() => {
                     this.examTimeLeft--;
                     this.updateExamTimer();
-                    
                     if (this.examTimeLeft <= 0) {
                         this.autoSubmitTest();
                     }
                 }, 1000);
+            }
 
-                // Question timer
+            startQuestionTimer() {
+                if (this.questionTimer) {
+                    clearInterval(this.questionTimer);
+                }
+                
+                // Load the time already spent on this question
+                this.questionTimeSpent = this.testSession.timeSpent[this.currentQuestionIndex] || 0;
+                this.updateQuestionTimer();
+
                 this.questionTimer = setInterval(() => {
-                    this.questionTimeLeft--;
+                    this.questionTimeSpent++;
+                    // Save the new time spent back to our session data
+                    this.testSession.timeSpent[this.currentQuestionIndex] = this.questionTimeSpent;
                     this.updateQuestionTimer();
-                    
-                    if (this.questionTimeLeft <= 0) {
-                        // Auto move to next question
-                        this.navigateToQuestion(this.currentQuestionIndex + 1);
-                    }
                 }, 1000);
             }
 
@@ -1000,56 +965,29 @@
                 const timerElement = document.getElementById('exam-timer');
                 timerElement.textContent = timeString;
                 
-                // Add warning class when less than 30 minutes
                 if (this.examTimeLeft <= 1800) {
                     timerElement.classList.add('warning');
                 }
             }
 
             updateQuestionTimer() {
-                const minutes = Math.floor(this.questionTimeLeft / 60);
-                const seconds = this.questionTimeLeft % 60;
+                const minutes = Math.floor(this.questionTimeSpent / 60);
+                const seconds = this.questionTimeSpent % 60;
                 
                 const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                const timerElement = document.getElementById('question-timer');
-                timerElement.textContent = timeString;
-                
-                // Add warning class when less than 1 minute
-                if (this.questionTimeLeft <= 60) {
-                    timerElement.classList.add('warning');
-                } else {
-                    timerElement.classList.remove('warning');
-                }
+                document.getElementById('question-timer').textContent = timeString;
             }
 
             toggleFullscreen() {
-                const testContainer = document.getElementById('test-container');
-                const fullscreenBtn = document.getElementById('fullscreen-btn');
-                
-                if (!this.isFullscreen) {
-                    if (testContainer.requestFullscreen) {
-                        testContainer.requestFullscreen();
-                    } else if (testContainer.webkitRequestFullscreen) {
-                        testContainer.webkitRequestFullscreen();
-                    } else if (testContainer.msRequestFullscreen) {
-                        testContainer.msRequestFullscreen();
-                    }
-                    
-                    document.body.classList.add('fullscreen-mode');
-                    fullscreenBtn.textContent = '⛶ Exit Fullscreen';
-                    this.isFullscreen = true;
+                const elem = document.documentElement;
+                if (!document.fullscreenElement) {
+                    elem.requestFullscreen().catch(err => {
+                        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                    });
+                    document.getElementById('fullscreen-btn').textContent = '⛶ Exit Fullscreen';
                 } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    }
-                    
-                    document.body.classList.remove('fullscreen-mode');
-                    fullscreenBtn.textContent = '⛶ Fullscreen';
-                    this.isFullscreen = false;
+                    document.exitFullscreen();
+                    document.getElementById('fullscreen-btn').textContent = '⛶ Fullscreen';
                 }
             }
 
@@ -1057,15 +995,13 @@
                 this.autoSaveInterval = setInterval(() => {
                     this.saveSession();
                     this.showAutoSaveIndicator();
-                }, 30000); // Auto-save every 30 seconds
+                }, 30000);
             }
 
             showAutoSaveIndicator() {
                 const indicator = document.getElementById('auto-save-indicator');
                 indicator.classList.add('show');
-                setTimeout(() => {
-                    indicator.classList.remove('show');
-                }, 2000);
+                setTimeout(() => indicator.classList.remove('show'), 2000);
             }
 
             saveSession() {
@@ -1073,7 +1009,6 @@
             }
 
             preventExit() {
-                // Prevent page refresh/close
                 window.addEventListener('beforeunload', (e) => {
                     if (!this.exitAttempted) {
                         e.preventDefault();
@@ -1083,52 +1018,29 @@
                     }
                 });
 
-                // Prevent back button
                 window.addEventListener('popstate', (e) => {
                     if (!this.exitAttempted) {
                         history.pushState(null, null, location.href);
                         this.showExitModal();
                     }
                 });
-
-                // Push initial state
                 history.pushState(null, null, location.href);
             }
 
-            showSubmitModal() {
-                document.getElementById('submit-modal').classList.remove('hidden');
-            }
-
-            hideSubmitModal() {
-                document.getElementById('submit-modal').classList.add('hidden');
-            }
-
-            showExitModal() {
-                document.getElementById('exit-modal').classList.remove('hidden');
-            }
-
-            hideExitModal() {
-                document.getElementById('exit-modal').classList.add('hidden');
-            }
+            showSubmitModal() { document.getElementById('submit-modal').classList.remove('hidden'); }
+            hideSubmitModal() { document.getElementById('submit-modal').classList.add('hidden'); }
+            showExitModal() { document.getElementById('exit-modal').classList.remove('hidden'); }
+            hideExitModal() { document.getElementById('exit-modal').classList.add('hidden'); }
 
             submitTest() {
                 this.exitAttempted = true;
-                
-                // Clear timers
                 if (this.examTimer) clearInterval(this.examTimer);
                 if (this.questionTimer) clearInterval(this.questionTimer);
                 if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
 
-                // Calculate results
                 const results = this.calculateResults();
-                
-                // Store results
                 sessionStorage.setItem('test_results', JSON.stringify(results));
-                
-                // Clear test session
                 sessionStorage.removeItem('test_session');
-                
-                // Navigate to results
                 window.location.href = 'results.html';
             }
 
@@ -1138,32 +1050,27 @@
             }
 
             calculateResults() {
-                const answers = this.testSession.answers;
-                const questions = this.testSession.testData.questions_data;
-                let correct = 0;
-                let incorrect = 0;
-                let unanswered = 0;
-                let totalMarks = 0;
-                let negativeMarks = 0;
-
+                const { answers, testData: { questions_data, marks } } = this.testSession;
+                let correct = 0, incorrect = 0, unanswered = 0;
+                let totalMarks = 0, negativeMarks = 0;
                 const subjectWise = {};
 
-                questions.forEach((question, index) => {
-                    const subject = question.subject;
+                questions_data.forEach((q, i) => {
+                    const { subject } = q;
                     if (!subjectWise[subject]) {
                         subjectWise[subject] = { correct: 0, incorrect: 0, unanswered: 0, total: 0 };
                     }
                     subjectWise[subject].total++;
 
-                    if (answers[index] !== undefined) {
-                        if (answers[index] === question.correctAnswer) {
+                    if (answers[i] !== undefined) {
+                        if (answers[i] === q.correctAnswer) {
                             correct++;
                             subjectWise[subject].correct++;
-                            totalMarks += question.marks;
+                            totalMarks += q.marks;
                         } else {
                             incorrect++;
                             subjectWise[subject].incorrect++;
-                            negativeMarks += question.negativeMarks;
+                            negativeMarks += q.negativeMarks;
                         }
                     } else {
                         unanswered++;
@@ -1172,38 +1079,22 @@
                 });
 
                 const finalScore = totalMarks - negativeMarks;
-                const percentage = (finalScore / this.testSession.testData.marks) * 100;
-
                 return {
-                    testData: this.testSession.testData,
-                    answers: answers,
-                    correct: correct,
-                    incorrect: incorrect,
-                    unanswered: unanswered,
-                    totalMarks: totalMarks,
-                    negativeMarks: negativeMarks,
-                    finalScore: Math.max(0, finalScore),
-                    percentage: Math.max(0, percentage),
-                    subjectWise: subjectWise,
-                    completedAt: new Date().toISOString(),
-                    timeTaken: this.testSession.testData.duration * 60 - this.examTimeLeft
+                    testData: this.testSession.testData, answers, correct, incorrect, unanswered,
+                    totalMarks, negativeMarks, finalScore: Math.max(0, finalScore),
+                    percentage: Math.max(0, (finalScore / marks) * 100),
+                    subjectWise, completedAt: new Date().toISOString(),
+                    timeTaken: (this.testSession.testData.duration * 60) - this.examTimeLeft
                 };
             }
         }
 
-        // Initialize test interface when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new TestInterface();
-        });
-
-        // Handle fullscreen change events
+        document.addEventListener('DOMContentLoaded', () => new TestInterface());
+        
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
-                document.body.classList.remove('fullscreen-mode');
-                const fullscreenBtn = document.getElementById('fullscreen-btn');
-                if (fullscreenBtn) {
-                    fullscreenBtn.textContent = '⛶ Fullscreen';
-                }
+                const btn = document.getElementById('fullscreen-btn');
+                if (btn) btn.textContent = '⛶ Fullscreen';
             }
         });
     </script>
