@@ -16,12 +16,12 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #374151;
-            background-color: #ffffff;
+            background-color: #f9fafb; /* Slightly off-white background */
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Color variables matching the design brief */
+        /* Color variables */
         :root {
             --primary: #15803d;
             --primary-foreground: #ffffff;
@@ -29,35 +29,24 @@
             --secondary-foreground: #374151;
             --background: #ffffff;
             --foreground: #374151;
-            --card: #f0fdf4;
+            --card: #ffffff;
             --card-foreground: #374151;
             --muted: #f0fdf4;
             --muted-foreground: #4b5563;
-            --border: #d1d5db;
+            --border: #e5e7eb;
             --input: #e5e7eb;
             --ring: #84cc16;
-            --destructive: #ea580c;
+            --destructive: #dc2626;
             --destructive-foreground: #ffffff;
             --warning: #f59e0b;
             --warning-foreground: #ffffff;
-        }
-
-        /* Fullscreen styles */
-        .fullscreen-mode {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 9999;
-            background-color: var(--background);
         }
 
         /* Test container */
         .test-container {
             display: flex;
             height: 100vh;
-            position: relative;
+            padding-top: 60px; /* Space for the fixed header */
         }
 
         /* Header */
@@ -67,17 +56,18 @@
             left: 0;
             right: 0;
             background-color: var(--card);
-            border-bottom: 2px solid var(--border);
-            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
             height: 60px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .test-title {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--foreground);
         }
@@ -102,7 +92,6 @@
 
         .timer-display.warning {
             background-color: var(--warning);
-            color: var(--warning-foreground);
             animation: pulse 1s infinite;
         }
 
@@ -113,7 +102,7 @@
 
         .fullscreen-btn, .submit-btn {
             padding: 0.5rem 1rem;
-            border: none;
+            border: 1px solid transparent;
             border-radius: 0.375rem;
             font-weight: 500;
             cursor: pointer;
@@ -125,36 +114,22 @@
             background-color: var(--secondary);
             color: var(--secondary-foreground);
         }
-
-        .fullscreen-btn:hover {
-            background-color: #65a30d;
-        }
+        .fullscreen-btn:hover { background-color: #65a30d; }
 
         .submit-btn {
             background-color: var(--destructive);
             color: var(--destructive-foreground);
         }
+        .submit-btn:hover { background-color: #b91c1c; }
 
-        .submit-btn:hover {
-            background-color: #dc2626;
-        }
-
-        /* Main content area */
-        .test-main {
-            display: flex;
-            flex: 1;
-            margin-top: 60px;
-        }
-
-        /* Question navigation sidebar */
+        /* Question Navigation Sidebar (Desktop) */
         .question-nav {
             width: 280px;
             background-color: var(--card);
             border-right: 1px solid var(--border);
-            padding: 1rem;
+            padding: 1.5rem 1rem;
             overflow-y: auto;
-            height: calc(100vh - 60px);
-            transition: transform 0.3s ease;
+            height: 100%;
             flex-shrink: 0;
         }
 
@@ -163,48 +138,22 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--border);
         }
 
         .nav-title {
             font-weight: 600;
+            font-size: 1.125rem;
             color: var(--foreground);
         }
 
-        .nav-toggle {
-            background: none;
-            border: none;
-            color: var(--foreground);
-            cursor: pointer;
-            font-size: 1.25rem;
-            padding: 0.25rem;
-            transition: transform 0.3s ease;
-        }
-
-        /* Styles for the collapsed sidebar on desktop */
-        .question-nav.collapsed {
-            transform: translateX(calc(-100% + 55px));
-        }
-
-        .question-nav.collapsed .nav-toggle {
-            transform: rotate(180deg);
-        }
-        
-        .question-nav .nav-header span, .question-nav .question-grid, .question-nav .nav-legend {
-            transition: opacity 0.2s ease-in-out;
-        }
-        
-        .question-nav.collapsed .nav-header span,
-        .question-nav.collapsed .question-grid,
-        .question-nav.collapsed .nav-legend {
-            opacity: 0;
-            pointer-events: none;
-        }
+        /* Hide desktop collapse button by default */
+        .nav-toggle { display: none; }
 
         .question-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
             gap: 0.5rem;
             margin-bottom: 1.5rem;
         }
@@ -212,7 +161,7 @@
         .question-nav-item {
             width: 40px;
             height: 40px;
-            border: 2px solid var(--border);
+            border: 1px solid var(--border);
             border-radius: 0.375rem;
             display: flex;
             align-items: center;
@@ -224,93 +173,55 @@
             color: var(--foreground);
         }
 
-        .question-nav-item:hover {
-            border-color: var(--primary);
-        }
-
+        .question-nav-item:hover { border-color: var(--primary); }
         .question-nav-item.current {
             background-color: var(--primary);
             color: var(--primary-foreground);
             border-color: var(--primary);
+            transform: scale(1.05);
         }
-
         .question-nav-item.answered {
             background-color: var(--secondary);
             color: var(--secondary-foreground);
             border-color: var(--secondary);
         }
-
         .question-nav-item.marked {
             background-color: var(--warning);
             color: var(--warning-foreground);
             border-color: var(--warning);
         }
-
         .question-nav-item.answered.marked {
             background: linear-gradient(45deg, var(--secondary) 50%, var(--warning) 50%);
             color: var(--primary-foreground);
         }
 
-        /* Legend */
-        .nav-legend {
-            font-size: 0.75rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 0.25rem;
-            border: 1px solid var(--border);
-        }
+        .nav-legend { font-size: 0.875rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .legend-color { width: 16px; height: 16px; border-radius: 0.25rem; border: 1px solid var(--border); }
 
         /* Question content area */
         .question-content {
             flex: 1;
-            padding: 1.5rem;
+            padding: 1.5rem 2rem;
             overflow-y: auto;
-            height: calc(100vh - 60px);
-            position: relative;
+            height: 100%;
         }
+        
+        /* Mobile-only toggle button, hidden on desktop */
+        .mobile-nav-toggle { display: none; }
 
-        .mobile-nav-toggle {
-            display: none;
-            position: fixed;
-            top: 70px;
-            left: 1rem;
-            z-index: 50;
-            background-color: var(--primary);
-            color: var(--primary-foreground);
-            border: none;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            cursor: pointer;
-            font-size: 1.25rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        /* Question display */
         .question-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 1rem;
             margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
         }
 
-        .question-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
+        .question-info { display: flex; align-items: center; gap: 1rem; }
         .question-number {
             background-color: var(--primary);
             color: var(--primary-foreground);
@@ -318,7 +229,6 @@
             border-radius: 0.375rem;
             font-weight: 600;
         }
-
         .question-subject {
             background-color: var(--secondary);
             color: var(--secondary-foreground);
@@ -327,287 +237,133 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
-
         .question-timer {
             background-color: var(--muted);
-            color: var(--foreground);
             padding: 0.5rem 1rem;
             border-radius: 0.375rem;
             font-family: 'Courier New', monospace;
             font-weight: 600;
-            border: 2px solid var(--border);
+            border: 1px solid var(--border);
         }
-
-        .question-text {
-            font-size: 1.125rem;
-            line-height: 1.7;
-            margin-bottom: 2rem;
-            color: var(--foreground);
-        }
-
-        /* Options */
-        .options-container {
-            margin-bottom: 2rem;
-        }
-
+        
+        .question-text { font-size: 1.125rem; line-height: 1.7; margin-bottom: 2rem; color: var(--foreground); }
+        .options-container { margin-bottom: 2rem; }
         .option {
             display: flex;
             align-items: flex-start;
             gap: 1rem;
             padding: 1rem;
             margin-bottom: 0.75rem;
-            border: 2px solid var(--border);
+            border: 1px solid var(--border);
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.2s;
-            background-color: var(--background);
+            background-color: var(--card);
         }
-
-        .option:hover {
-            border-color: var(--primary);
-            background-color: var(--muted);
-        }
-
+        .option:hover { border-color: var(--primary); background-color: var(--muted); }
         .option.selected {
             border-color: var(--primary);
             background-color: var(--primary);
             color: var(--primary-foreground);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
         .option-label {
             background-color: var(--border);
-            color: var(--foreground);
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            flex-shrink: 0;
+            width: 2rem; height: 2rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; flex-shrink: 0;
         }
+        .option.selected .option-label { background-color: var(--primary-foreground); color: var(--primary); }
+        .option-text { flex: 1; font-size: 1rem; line-height: 1.5; }
 
-        .option.selected .option-label {
-            background-color: var(--primary-foreground);
-            color: var(--primary);
-        }
-
-        .option-text {
-            flex: 1;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        /* Question controls */
         .question-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 1rem;
-            padding-top: 1rem;
+            padding-top: 1.5rem;
             border-top: 1px solid var(--border);
         }
-
-        .control-group {
-            display: flex;
-            gap: 0.75rem;
-        }
-
+        .control-group { display: flex; gap: 0.75rem; }
         .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.875rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            padding: 0.75rem 1.5rem; border: 1px solid var(--border); border-radius: 0.375rem;
+            font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;
+            display: inline-flex; align-items: center; gap: 0.5rem;
         }
+        .btn-outline { background: none; color: var(--foreground); }
+        .btn-outline:hover { border-color: var(--primary); background-color: var(--muted); }
+        .btn-primary { background-color: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+        .btn-primary:hover { background-color: #166534; border-color: #166534;}
+        .btn-warning { background-color: var(--warning); color: var(--warning-foreground); border-color: var(--warning); }
+        .btn-warning:hover { background-color: #d97706; border-color: #d97706;}
+        .btn-secondary { background-color: var(--secondary); color: var(--secondary-foreground); border-color: var(--secondary); }
+        .btn-secondary:hover { background-color: #65a30d; border-color: #65a30d;}
 
-        .btn-outline {
-            background: none;
-            border: 2px solid var(--border);
-            color: var(--foreground);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary);
-            background-color: var(--muted);
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: var(--primary-foreground);
-        }
-
-        .btn-primary:hover {
-            background-color: #166534;
-        }
-
-        .btn-warning {
-            background-color: var(--warning);
-            color: var(--warning-foreground);
-        }
-
-        .btn-warning:hover {
-            background-color: #d97706;
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary);
-            color: var(--secondary-foreground);
-        }
-
-        .btn-secondary:hover {
-            background-color: #65a30d;
-        }
-
-        /* Mobile responsive */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
+            .test-container { padding-top: 60px; }
+            
+            /* Make sidebar a slide-out panel */
             .question-nav {
-                position: fixed;
-                top: 60px;
-                left: 0;
-                z-index: 101; /* Higher z-index to appear above content */
-                width: 100%;
-                max-width: 320px;
-                height: calc(100vh - 60px);
+                position: fixed; top: 60px; left: 0; z-index: 101;
+                width: 90%; max-width: 320px; height: calc(100vh - 60px);
                 transform: translateX(-100%);
                 box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease-in-out;
             }
+            .question-nav.open { transform: translateX(0); }
 
-            .question-nav.open {
-                transform: translateX(0);
-            }
-            
-            /* Remove desktop-only collapse behavior on mobile */
-            .question-nav.collapsed {
-                transform: translateX(-100%);
-            }
-
+            /* Show mobile-specific buttons and hide desktop ones */
+            .nav-toggle { display: block; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
             .mobile-nav-toggle {
-                display: block;
+                display: block; background: none; border: none;
+                font-size: 1.5rem; color: var(--foreground);
+                cursor: pointer; padding: 0.25rem;
             }
 
-            .question-content {
-                /* Increased padding-top to avoid overlap from mobile nav toggle button */
-                padding: 4.5rem 1rem 1rem 1rem;
-            }
-
-            .question-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .question-info {
-                flex-wrap: wrap;
-            }
-
-            .question-controls {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .control-group {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .btn {
-                flex: 1;
-                justify-content: center;
-            }
-
-            .test-header {
-                padding: 0.5rem;
-            }
-
-            .header-controls {
-                gap: 0.5rem;
-            }
-
-            .timer-display {
-                font-size: 0.875rem;
-                padding: 0.375rem 0.75rem;
-                min-width: 80px;
-            }
-
-            .fullscreen-btn, .submit-btn {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.75rem;
+            .question-content { padding: 1.5rem 1rem; }
+            .question-header { justify-content: space-between; }
+            .question-info { flex-grow: 1; } /* Allow info to take up space */
+            
+            .question-controls { flex-direction: column; gap: 1rem; }
+            .control-group { width: 100%; justify-content: center; }
+            .btn { flex: 1; justify-content: center; }
+            
+            .test-header { padding: 0.5rem 1rem; }
+            .test-title { font-size: 1rem; }
+            .header-controls { gap: 0.5rem; }
+            .timer-display, .fullscreen-btn, .submit-btn {
+                font-size: 0.875rem; padding: 0.375rem 0.75rem; min-width: auto;
             }
         }
 
-        /* Loading and modal styles */
+        /* Modal styles */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
         }
-
         .modal {
-            background-color: var(--background);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
+            background-color: var(--background); border-radius: 0.5rem;
+            padding: 2rem; max-width: 400px; width: 90%; text-align: center;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
-
-        .modal h3 {
-            color: var(--foreground);
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-        }
-
-        .modal p {
-            color: var(--muted-foreground);
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        .modal h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .modal p { color: var(--muted-foreground); margin-bottom: 1.5rem; }
+        .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+        .hidden { display: none !important; }
 
         /* Auto-save indicator */
         .auto-save-indicator {
-            position: fixed;
-            top: 70px;
-            right: 1rem;
-            background-color: var(--secondary);
-            color: var(--secondary-foreground);
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 50;
+            position: fixed; top: 70px; right: 1rem;
+            background-color: var(--secondary); color: var(--secondary-foreground);
+            padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem;
+            opacity: 0; transition: opacity 0.3s; z-index: 50; pointer-events: none;
         }
-
-        .auto-save-indicator.show {
-            opacity: 1;
-        }
+        .auto-save-indicator.show { opacity: 1; }
     </style>
 </head>
 <body>
-    <!-- Test Header -->
     <header class="test-header">
         <div class="test-title" id="test-title">Loading Test...</div>
         <div class="header-controls">
@@ -617,64 +373,36 @@
         </div>
     </header>
 
-    <!-- Auto-save indicator -->
-    <div class="auto-save-indicator" id="auto-save-indicator">
-        Saving...
-    </div>
+    <div class="auto-save-indicator" id="auto-save-indicator">Saving...</div>
 
-    <!-- Mobile navigation toggle -->
-    <button class="mobile-nav-toggle" id="mobile-nav-toggle">☰</button>
-
-    <!-- Test Container -->
     <div class="test-container" id="test-container">
-        <!-- Question Navigation Sidebar -->
         <nav class="question-nav" id="question-nav">
             <div class="nav-header">
                 <span class="nav-title">Questions</span>
                 <button class="nav-toggle" id="nav-toggle">←</button>
             </div>
-            
-            <div class="question-grid" id="question-grid">
-                <!-- Question navigation items will be populated by JavaScript -->
-            </div>
-
+            <div class="question-grid" id="question-grid"></div>
             <div class="nav-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--background); border-color: var(--border);"></div>
-                    <span>Not Visited</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--primary);"></div>
-                    <span>Current</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--secondary);"></div>
-                    <span>Answered</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--warning);"></div>
-                    <span>Marked</span>
-                </div>
+                <!-- Legend items dynamically generated -->
+                 <div class="legend-item"><div class="legend-color" style="background-color: var(--background); border-color: var(--border);"></div><span>Not Visited</span></div>
+                 <div class="legend-item"><div class="legend-color" style="background-color: var(--primary);"></div><span>Current</span></div>
+                 <div class="legend-item"><div class="legend-color" style="background-color: var(--secondary);"></div><span>Answered</span></div>
+                 <div class="legend-item"><div class="legend-color" style="background-color: var(--warning);"></div><span>Marked</span></div>
             </div>
         </nav>
 
-        <!-- Question Content Area -->
         <main class="question-content">
             <div class="question-header">
                 <div class="question-info">
-                    <div class="question-number" id="question-number">Question 1</div>
+                    <div class="question-number" id="question-number">Q 1</div>
                     <div class="question-subject" id="question-subject">Physics</div>
                 </div>
-                <div class="question-timer" id="question-timer">00:00</div>
+                 <div class="question-timer" id="question-timer">00:00</div>
+                 <button class="mobile-nav-toggle" id="mobile-nav-toggle">☰</button>
             </div>
 
-            <div class="question-text" id="question-text">
-                Loading question...
-            </div>
-
-            <div class="options-container" id="options-container">
-                <!-- Options will be populated by JavaScript -->
-            </div>
+            <div class="question-text" id="question-text">Loading question...</div>
+            <div class="options-container" id="options-container"></div>
 
             <div class="question-controls">
                 <div class="control-group">
@@ -689,23 +417,21 @@
         </main>
     </div>
 
-    <!-- Submit Confirmation Modal -->
+    <!-- Modals -->
     <div class="modal-overlay hidden" id="submit-modal">
         <div class="modal">
             <h3>Submit Test?</h3>
-            <p>Are you sure you want to submit the test? You won't be able to make any changes after submission.</p>
+            <p>Are you sure you want to submit? You won't be able to make any changes after this.</p>
             <div class="modal-actions">
                 <button class="btn btn-outline" id="cancel-submit">Cancel</button>
-                <button class="btn btn-primary" id="confirm-submit">Submit Test</button>
+                <button class="btn btn-primary" id="confirm-submit">Submit</button>
             </div>
         </div>
     </div>
-
-    <!-- Exit Warning Modal -->
     <div class="modal-overlay hidden" id="exit-modal">
         <div class="modal">
             <h3>Warning!</h3>
-            <p>Attempting to leave the test will result in automatic submission. Do you want to continue?</p>
+            <p>Leaving the test will result in automatic submission. Do you want to continue?</p>
             <div class="modal-actions">
                 <button class="btn btn-outline" id="cancel-exit">Stay in Test</button>
                 <button class="btn btn-primary" id="confirm-exit">Submit & Exit</button>
@@ -714,7 +440,6 @@
     </div>
 
     <script>
-        // Test Interface Class
         class TestInterface {
             constructor() {
                 this.testSession = null;
@@ -722,9 +447,8 @@
                 this.examTimer = null;
                 this.questionTimer = null;
                 this.examTimeLeft = 0;
-                this.questionTimeSpent = 0; // Tracks time for the currently displayed question
+                this.questionTimeSpent = 0;
                 this.autoSaveInterval = null;
-                this.isFullscreen = false;
                 this.exitAttempted = false;
 
                 this.initializeAuth();
@@ -736,14 +460,11 @@
             }
 
             initializeAuth() {
-                const session = localStorage.getItem('examace_session') || 
-                                sessionStorage.getItem('examace_session');
-                
+                const session = localStorage.getItem('examace_session') || sessionStorage.getItem('examace_session');
                 if (!session) {
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.html'; // Redirect to a login page if not authenticated
                     return;
                 }
-
                 try {
                     this.userData = JSON.parse(session);
                 } catch (error) {
@@ -756,20 +477,16 @@
                 const sessionStr = sessionStorage.getItem('test_session');
                 if (!sessionStr) {
                     alert('No active test session found. Redirecting to test selection.');
-                    window.location.href = 'test-selection.html';
+                    window.location.href = 'test-selection.html'; // Redirect to test selection if no session
                     return;
                 }
-
                 try {
                     this.testSession = JSON.parse(sessionStr);
                     this.examTimeLeft = this.testSession.testData.duration * 60;
                     this.currentQuestionIndex = this.testSession.currentQuestion || 0;
-                    
-                    // Initialize timeSpent array if it doesn't exist
                     if (!this.testSession.timeSpent) {
                         this.testSession.timeSpent = new Array(this.testSession.testData.questions_data.length).fill(0);
                     }
-
                     this.initializeInterface();
                 } catch (error) {
                     console.error('Invalid test session:', error);
@@ -787,25 +504,18 @@
             generateQuestionNavigation() {
                 const questionGrid = document.getElementById('question-grid');
                 const questions = this.testSession.testData.questions_data;
-                
-                questionGrid.innerHTML = questions.map((_, index) => {
-                    const questionNum = index + 1;
-                    return `<div class="question-nav-item" data-question="${index}">${questionNum}</div>`;
-                }).join('');
-
+                questionGrid.innerHTML = questions.map((_, index) => `<div class="question-nav-item" data-question="${index}">${index + 1}</div>`).join('');
                 questionGrid.querySelectorAll('.question-nav-item').forEach(item => {
                     item.addEventListener('click', () => {
-                        const questionIndex = parseInt(item.dataset.question);
-                        this.navigateToQuestion(questionIndex);
+                        this.navigateToQuestion(parseInt(item.dataset.question));
+                        document.getElementById('question-nav').classList.remove('open'); // Close nav on selection in mobile
                     });
                 });
-
                 this.updateQuestionNavigation();
             }
 
             updateQuestionNavigation() {
-                const navItems = document.querySelectorAll('.question-nav-item');
-                navItems.forEach((item, index) => {
+                document.querySelectorAll('.question-nav-item').forEach((item, index) => {
                     item.classList.remove('current', 'answered', 'marked');
                     if (index === this.currentQuestionIndex) item.classList.add('current');
                     if (this.testSession.answers[index] !== undefined) item.classList.add('answered');
@@ -816,44 +526,33 @@
             loadQuestion(index) {
                 const questions = this.testSession.testData.questions_data;
                 if (index < 0 || index >= questions.length) return;
-
+                
                 this.currentQuestionIndex = index;
                 const question = questions[index];
 
                 document.getElementById('question-number').textContent = `Question ${index + 1}`;
                 document.getElementById('question-subject').textContent = question.subject;
-                document.getElementById('question-text').textContent = question.questionText;
+                document.getElementById('question-text').innerHTML = question.questionText;
 
                 const optionsContainer = document.getElementById('options-container');
                 optionsContainer.innerHTML = question.options.map((option, optIndex) => {
                     const letter = String.fromCharCode(65 + optIndex);
                     const isSelected = this.testSession.answers[index] === optIndex;
-                    return `
-                        <div class="option ${isSelected ? 'selected' : ''}" data-option="${optIndex}">
-                            <div class="option-label">${letter}</div>
-                            <div class="option-text">${option}</div>
-                        </div>`;
+                    return `<div class="option ${isSelected ? 'selected' : ''}" data-option="${optIndex}"><div class="option-label">${letter}</div><div class="option-text">${option}</div></div>`;
                 }).join('');
-
                 optionsContainer.querySelectorAll('.option').forEach(option => {
-                    option.addEventListener('click', () => {
-                        this.selectOption(parseInt(option.dataset.option));
-                    });
+                    option.addEventListener('click', () => this.selectOption(parseInt(option.dataset.option)));
                 });
 
                 this.updateControls();
                 this.updateQuestionNavigation();
-                
                 this.startQuestionTimer();
-
                 this.testSession.currentQuestion = index;
                 this.saveSession();
             }
 
             selectOption(optionIndex) {
-                document.querySelectorAll('.option').forEach((opt, idx) => {
-                    opt.classList.toggle('selected', idx === optionIndex);
-                });
+                document.querySelectorAll('.option').forEach((opt, idx) => opt.classList.toggle('selected', idx === optionIndex));
                 this.testSession.answers[this.currentQuestionIndex] = optionIndex;
                 this.updateQuestionNavigation();
                 this.saveSession();
@@ -861,10 +560,9 @@
 
             updateControls() {
                 document.getElementById('prev-btn').disabled = this.currentQuestionIndex === 0;
-                
                 const markReviewBtn = document.getElementById('mark-review-btn');
                 const isMarked = this.testSession.markedForReview.includes(this.currentQuestionIndex);
-                markReviewBtn.textContent = isMarked ? '🔖 Unmark Review' : '🔖 Mark for Review';
+                markReviewBtn.innerHTML = isMarked ? '🔖 Unmark Review' : '🔖 Mark for Review';
                 markReviewBtn.classList.toggle('btn-warning', !isMarked);
                 markReviewBtn.classList.toggle('btn-outline', isMarked);
             }
@@ -878,24 +576,20 @@
             initializeEventListeners() {
                 document.getElementById('prev-btn').addEventListener('click', () => this.navigateToQuestion(this.currentQuestionIndex - 1));
                 document.getElementById('save-next-btn').addEventListener('click', () => this.navigateToQuestion(this.currentQuestionIndex + 1));
-                
                 document.getElementById('clear-btn').addEventListener('click', () => {
                     delete this.testSession.answers[this.currentQuestionIndex];
                     this.loadQuestion(this.currentQuestionIndex);
                 });
-
                 document.getElementById('mark-review-btn').addEventListener('click', () => this.toggleMarkForReview());
                 document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
                 document.getElementById('submit-btn').addEventListener('click', () => this.showSubmitModal());
 
-                // Sidebar Toggles
+                // Mobile Sidebar Toggles
                 document.getElementById('mobile-nav-toggle').addEventListener('click', () => {
-                    document.getElementById('question-nav').classList.toggle('open');
+                    document.getElementById('question-nav').classList.add('open');
                 });
                 document.getElementById('nav-toggle').addEventListener('click', () => {
-                    const nav = document.getElementById('question-nav');
-                    nav.classList.toggle('collapsed'); // For desktop view
-                    nav.classList.remove('open');       // For mobile view
+                    document.getElementById('question-nav').classList.remove('open');
                 });
 
                 // Modals
@@ -903,91 +597,56 @@
                 document.getElementById('confirm-submit').addEventListener('click', () => this.submitTest());
                 document.getElementById('cancel-exit').addEventListener('click', () => this.hideExitModal());
                 document.getElementById('confirm-exit').addEventListener('click', () => this.submitTest());
-
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft' && !e.ctrlKey) this.navigateToQuestion(this.currentQuestionIndex - 1);
-                    else if (e.key === 'ArrowRight' && !e.ctrlKey) this.navigateToQuestion(this.currentQuestionIndex + 1);
-                    else if (e.key >= '1' && e.key <= '4') this.selectOption(parseInt(e.key) - 1);
-                    else if (e.key === 'F11') {
-                        e.preventDefault();
-                        this.toggleFullscreen();
-                    }
-                });
             }
 
             toggleMarkForReview() {
                 const index = this.testSession.markedForReview.indexOf(this.currentQuestionIndex);
-                if (index > -1) {
-                    this.testSession.markedForReview.splice(index, 1);
-                } else {
-                    this.testSession.markedForReview.push(this.currentQuestionIndex);
-                }
+                if (index > -1) this.testSession.markedForReview.splice(index, 1);
+                else this.testSession.markedForReview.push(this.currentQuestionIndex);
                 this.updateControls();
                 this.updateQuestionNavigation();
                 this.saveSession();
             }
 
             startTimers() {
-                // Exam timer (overall)
                 this.examTimer = setInterval(() => {
                     this.examTimeLeft--;
                     this.updateExamTimer();
-                    if (this.examTimeLeft <= 0) {
-                        this.autoSubmitTest();
-                    }
+                    if (this.examTimeLeft <= 0) this.autoSubmitTest();
                 }, 1000);
             }
 
             startQuestionTimer() {
-                if (this.questionTimer) {
-                    clearInterval(this.questionTimer);
-                }
-                
-                // Load the time already spent on this question
+                if (this.questionTimer) clearInterval(this.questionTimer);
                 this.questionTimeSpent = this.testSession.timeSpent[this.currentQuestionIndex] || 0;
                 this.updateQuestionTimer();
-
                 this.questionTimer = setInterval(() => {
                     this.questionTimeSpent++;
-                    // Save the new time spent back to our session data
                     this.testSession.timeSpent[this.currentQuestionIndex] = this.questionTimeSpent;
                     this.updateQuestionTimer();
                 }, 1000);
             }
 
             updateExamTimer() {
-                const hours = Math.floor(this.examTimeLeft / 3600);
-                const minutes = Math.floor((this.examTimeLeft % 3600) / 60);
-                const seconds = this.examTimeLeft % 60;
-                
-                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                const timerElement = document.getElementById('exam-timer');
-                timerElement.textContent = timeString;
-                
-                if (this.examTimeLeft <= 1800) {
-                    timerElement.classList.add('warning');
-                }
+                const h = Math.floor(this.examTimeLeft / 3600).toString().padStart(2, '0');
+                const m = Math.floor((this.examTimeLeft % 3600) / 60).toString().padStart(2, '0');
+                const s = (this.examTimeLeft % 60).toString().padStart(2, '0');
+                const timerEl = document.getElementById('exam-timer');
+                timerEl.textContent = `${h}:${m}:${s}`;
+                if (this.examTimeLeft <= 1800) timerEl.classList.add('warning');
             }
 
             updateQuestionTimer() {
-                const minutes = Math.floor(this.questionTimeSpent / 60);
-                const seconds = this.questionTimeSpent % 60;
-                
-                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('question-timer').textContent = timeString;
+                const m = Math.floor(this.questionTimeSpent / 60).toString().padStart(2, '0');
+                const s = (this.questionTimeSpent % 60).toString().padStart(2, '0');
+                document.getElementById('question-timer').textContent = `${m}:${s}`;
             }
 
             toggleFullscreen() {
-                const elem = document.documentElement;
                 if (!document.fullscreenElement) {
-                    elem.requestFullscreen().catch(err => {
-                        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                    });
-                    document.getElementById('fullscreen-btn').textContent = '⛶ Exit Fullscreen';
+                    document.documentElement.requestFullscreen().catch(err => console.error(err));
                 } else {
                     document.exitFullscreen();
-                    document.getElementById('fullscreen-btn').textContent = '⛶ Fullscreen';
                 }
             }
 
@@ -1004,10 +663,8 @@
                 setTimeout(() => indicator.classList.remove('show'), 2000);
             }
 
-            saveSession() {
-                sessionStorage.setItem('test_session', JSON.stringify(this.testSession));
-            }
-
+            saveSession() { sessionStorage.setItem('test_session', JSON.stringify(this.testSession)); }
+            
             preventExit() {
                 window.addEventListener('beforeunload', (e) => {
                     if (!this.exitAttempted) {
@@ -1017,14 +674,6 @@
                         return '';
                     }
                 });
-
-                window.addEventListener('popstate', (e) => {
-                    if (!this.exitAttempted) {
-                        history.pushState(null, null, location.href);
-                        this.showExitModal();
-                    }
-                });
-                history.pushState(null, null, location.href);
             }
 
             showSubmitModal() { document.getElementById('submit-modal').classList.remove('hidden'); }
@@ -1041,6 +690,7 @@
                 const results = this.calculateResults();
                 sessionStorage.setItem('test_results', JSON.stringify(results));
                 sessionStorage.removeItem('test_session');
+                // Assume a 'results.html' page exists to display the results
                 window.location.href = 'results.html';
             }
 
@@ -1070,7 +720,7 @@
                         } else {
                             incorrect++;
                             subjectWise[subject].incorrect++;
-                            negativeMarks += q.negativeMarks;
+                            negativeMarks += q.negativeMarks || 0;
                         }
                     } else {
                         unanswered++;
@@ -1082,7 +732,7 @@
                 return {
                     testData: this.testSession.testData, answers, correct, incorrect, unanswered,
                     totalMarks, negativeMarks, finalScore: Math.max(0, finalScore),
-                    percentage: Math.max(0, (finalScore / marks) * 100),
+                    percentage: marks > 0 ? Math.max(0, (finalScore / marks) * 100) : 0,
                     subjectWise, completedAt: new Date().toISOString(),
                     timeTaken: (this.testSession.testData.duration * 60) - this.examTimeLeft
                 };
@@ -1092,12 +742,11 @@
         document.addEventListener('DOMContentLoaded', () => new TestInterface());
         
         document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) {
-                const btn = document.getElementById('fullscreen-btn');
-                if (btn) btn.textContent = '⛶ Fullscreen';
-            }
+            const btn = document.getElementById('fullscreen-btn');
+            if (btn) btn.textContent = document.fullscreenElement ? 'Exit Fullscreen' : '⛶ Fullscreen';
         });
     </script>
 </body>
 </html>
+
 
