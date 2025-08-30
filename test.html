@@ -611,10 +611,11 @@
         <!-- Question Navigation Sidebar -->
         <nav class="question-nav" id="question-nav">
             <div class="nav-header">
-                <span class="nav-title">Questions</span>
-                <button class="nav-toggle" id="nav-toggle">←</button>
-            </div>
-            
+    <span class="nav-title">Questions</span>
+    <button class="nav-toggle" id="nav-toggle" onclick="handleSidebarBackButton()">←</button>
+</div>
+
+
             <div class="question-grid" id="question-grid">
                 <!-- Question navigation items will be populated by JavaScript -->
             </div>
@@ -693,8 +694,7 @@
             </div>
         </div>
     </div>
-
-   <script>
+<script>
     // Test Interface Class
     class TestInterface {
         constructor() {
@@ -886,28 +886,9 @@
             }
         }
 
-        closeSidebar() {
-            const questionNav = document.getElementById('question-nav');
-            const mobileToggleBtn = document.getElementById('mobile-nav-toggle');
-            const navToggleBtn = document.getElementById('nav-toggle');
-            
-            // Close sidebar on mobile
-            if (window.innerWidth <= 768) {
-                questionNav.classList.remove('open');
-                mobileToggleBtn.textContent = '☰';
-            } 
-            // Collapse sidebar on desktop
-            else {
-                questionNav.classList.add('collapsed');
-                navToggleBtn.textContent = '→';
-            }
-        }
-
         initializeEventListeners() {
             // Navigation controls
             document.getElementById('prev-btn').addEventListener('click', () => {
-                // Close sidebar when back button is clicked
-                this.closeSidebar();
                 this.navigateToQuestion(this.currentQuestionIndex - 1);
             });
 
@@ -936,10 +917,6 @@
             // Mobile navigation
             document.getElementById('mobile-nav-toggle').addEventListener('click', () => {
                 document.getElementById('question-nav').classList.toggle('open');
-            });
-
-            document.getElementById('nav-toggle').addEventListener('click', () => {
-                document.getElementById('question-nav').classList.toggle('collapsed');
             });
 
             // Modal controls
@@ -1103,7 +1080,7 @@
             });
 
             // Prevent back button
-            window.addEventListener('popstate', (e) => {
+            window.addEventListener('popstate', (e) {
                 if (!this.exitAttempted) {
                     history.pushState(null, null, location.href);
                     this.showExitModal();
@@ -1207,6 +1184,18 @@
                 completedAt: new Date().toISOString(),
                 timeTaken: this.testSession.testData.duration * 60 - this.examTimeLeft
             };
+        }
+    }
+
+    // Global function to handle sidebar back button click (mobile only)
+    function handleSidebarBackButton() {
+        const questionNav = document.getElementById('question-nav');
+        const mobileToggleBtn = document.getElementById('mobile-nav-toggle');
+        
+        // Only close sidebar on mobile
+        if (window.innerWidth <= 768) {
+            questionNav.classList.remove('open');
+            mobileToggleBtn.textContent = '☰';
         }
     }
 
