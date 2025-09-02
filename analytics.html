@@ -3,412 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics - ExamAce</title>
+    <title>Performance Analytics - ExamAce</title>
+    <!-- Chart.js for creating charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #374151;
-            background-color: #ffffff;
-            min-height: 100vh;
-        }
-
-        /* Color variables matching the design brief */
+        /* Reusing styles from results.html for a consistent look and feel */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #374151; background-color: #f9fafb; }
         :root {
-            --primary: #15803d;
-            --primary-foreground: #ffffff;
-            --secondary: #84cc16;
-            --secondary-foreground: #374151;
-            --background: #ffffff;
-            --foreground: #374151;
-            --card: #f0fdf4;
-            --card-foreground: #374151;
-            --muted: #f0fdf4;
-            --muted-foreground: #4b5563;
-            --border: #d1d5db;
-            --input: #e5e7eb;
-            --ring: #84cc16;
-            --destructive: #ea580c;
-            --destructive-foreground: #ffffff;
-            --warning: #f59e0b;
-            --warning-foreground: #ffffff;
-            --success: #10b981;
-            --success-foreground: #ffffff;
+            --primary: #15803d; --primary-foreground: #ffffff; --secondary: #84cc16;
+            --background: #ffffff; --foreground: #374151; --card: #ffffff;
+            --muted: #f3f4f6; --muted-foreground: #6b7280; --border: #e5e7eb;
+            --destructive: #dc2626; --warning: #f59e0b; --success: #16a34a;
         }
+        /* Navigation */
+        .navbar { background-color: var(--card); border-bottom: 1px solid var(--border); padding: 0 1rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; height: 4rem; }
+        .nav-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-link { color: var(--foreground); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .nav-link:hover, .nav-link.active { color: var(--primary); }
+        .nav-user { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar { width: 2rem; height: 2rem; background-color: var(--primary); color: var(--primary-foreground); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .logout-btn { background: none; border: 1px solid var(--border); color: var(--foreground); padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; }
 
-        /* Navigation styles */
-        .navbar {
-            background-color: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 0 1rem;
-        }
+        /* Main Content */
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 2rem 1rem; }
+        #loading-state, #no-data-state { text-align: center; padding: 4rem; }
+        #no-data-state a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .page-title { font-size: 2.25rem; font-weight: 700; margin-bottom: 2rem; color: var(--primary); }
+        .card { background-color: var(--card); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem; }
+        .card-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 4rem;
-        }
+        /* Overall Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        .stat-card { text-align: center; padding: 1.5rem; background-color: var(--muted); border-radius: 0.5rem; }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 1rem; color: var(--muted-foreground); margin-top: 0.5rem; }
 
-        .nav-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-        }
+        /* Analysis Grid (for charts and lists) */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; align-items: start; }
+        
+        .topics-list { list-style: none; }
+        .topics-list li { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+        .topics-list li:last-child { border-bottom: none; }
+        .topic-name { font-weight: 500; }
+        .topic-count { background-color: #fee2e2; color: #b91c1c; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 600;}
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--foreground);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--primary);
-        }
-
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 2rem;
-            height: 2rem;
-            background-color: var(--primary);
-            color: var(--primary-foreground);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .logout-btn {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--foreground);
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background-color: var(--muted);
-        }
-
-        /* Main content */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .page-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--foreground);
-            margin-bottom: 1rem;
-        }
-
-        .page-subtitle {
-            font-size: 1.125rem;
-            color: var(--muted-foreground);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Analytics grid */
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background-color: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--foreground);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Performance trends */
-        .trend-chart {
-            height: 200px;
-            background-color: var(--background);
-            border: 1px solid var(--border);
-            border-radius: 0.375rem;
-            display: flex;
-            align-items: end;
-            justify-content: space-around;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .trend-bar {
-            background-color: var(--primary);
-            width: 30px;
-            border-radius: 2px 2px 0 0;
-            transition: all 0.3s ease;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .trend-bar:hover {
-            background-color: var(--secondary);
-        }
-
-        .trend-bar::after {
-            content: attr(data-value);
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--foreground);
-        }
-
-        /* Subject performance */
-        .subject-performance {
-            margin-bottom: 1rem;
-        }
-
-        .subject-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            background-color: var(--background);
-            border: 1px solid var(--border);
-            border-radius: 0.375rem;
-        }
-
-        .subject-name {
-            font-weight: 600;
-            color: var(--foreground);
-        }
-
-        .subject-score {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .score-value {
-            font-weight: 700;
-            font-size: 1.125rem;
-        }
-
-        .score-value.excellent {
-            color: var(--success);
-        }
-
-        .score-value.good {
-            color: var(--secondary);
-        }
-
-        .score-value.average {
-            color: var(--warning);
-        }
-
-        .score-value.poor {
-            color: var(--destructive);
-        }
-
-        .progress-bar {
-            width: 100px;
-            height: 0.5rem;
-            background-color: var(--muted);
-            border-radius: 0.25rem;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-        }
-
-        .progress-fill.excellent {
-            background-color: var(--success);
-        }
-
-        .progress-fill.good {
-            background-color: var(--secondary);
-        }
-
-        .progress-fill.average {
-            background-color: var(--warning);
-        }
-
-        .progress-fill.poor {
-            background-color: var(--destructive);
-        }
-
-        /* Weak areas */
-        .weak-areas {
-            list-style: none;
-        }
-
-        .weak-area-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 0.375rem;
-        }
-
-        .weak-area-name {
-            color: var(--destructive);
-            font-weight: 500;
-        }
-
-        .weak-area-score {
-            color: var(--destructive);
-            font-weight: 600;
-        }
-
-        /* Comparison */
-        .comparison-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .comparison-item {
-            text-align: center;
-            padding: 1rem;
-            background-color: var(--background);
-            border: 1px solid var(--border);
-            border-radius: 0.375rem;
-        }
-
-        .comparison-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: block;
-        }
-
-        .comparison-label {
-            color: var(--muted-foreground);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-
-        /* Improvement suggestions */
-        .suggestions {
-            background-color: #f0f9ff;
-            border: 1px solid #7dd3fc;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-        }
-
-        .suggestions h3 {
-            color: #0369a1;
-            margin-bottom: 1rem;
-        }
-
-        .suggestions ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            color: #0369a1;
-        }
-
-        .suggestions li {
-            margin-bottom: 0.5rem;
-        }
-
-        /* Responsive design */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .comparison-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .trend-chart {
-                height: 150px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .main-container {
-                padding: 1rem;
-            }
-
-            .card {
-                padding: 1rem;
-            }
+            .nav-links { display: none; }
+            .page-title { font-size: 1.75rem; }
+            .stat-value { font-size: 2rem; }
+            .analysis-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-brand">ExamAce</a>
-            
-            <ul class="nav-links">
+            <a href="dashboard.html" class="nav-brand">ExamAce</a>
+             <ul class="nav-links">
                 <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
                 <li><a href="test-selection.html" class="nav-link">Mock Tests</a></li>
                 <li><a href="analytics.html" class="nav-link active">Analytics</a></li>
+                <li><a href="resources.html" class="nav-link">Resources</a></li>
+                <li><a href="tips.html" class="nav-link">Tips & Shortcuts</a></li>
                 <li><a href="profile.html" class="nav-link">Profile</a></li>
             </ul>
-
             <div class="nav-user">
                 <div class="user-avatar" id="user-avatar">U</div>
                 <button class="logout-btn" id="logout-btn">Logout</button>
@@ -416,290 +77,228 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-container">
-        <!-- Page Header -->
-        <section class="page-header">
-            <h1 class="page-title">Performance Analytics</h1>
-            <p class="page-subtitle">
-                Detailed insights into your test performance and areas for improvement
-            </p>
-        </section>
+        <div id="loading-state"><h1>Loading Analytics...</h1></div>
+        <div id="no-data-state" style="display:none;">
+            <h1>No Analytics Data Found</h1>
+            <p style="margin-top: 1rem;">You need to complete at least one test to see your performance analysis.</p>
+            <p style="margin-top: 1.5rem;"><a href="test-selection.html">Take a Test Now</a></p>
+        </div>
 
-        <!-- Analytics Grid -->
-        <section class="analytics-grid">
-            <!-- Performance Trends -->
+        <div id="analytics-content" style="display:none;">
+            <h1 class="page-title">Your Performance Analytics</h1>
+            
+            <!-- Overall Stats -->
+            <div class="stats-grid card">
+                <div class="stat-card"><div class="stat-value" id="stat-tests-taken">0</div><div class="stat-label">Tests Taken</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-avg-score">0%</div><div class="stat-label">Average Score</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-avg-accuracy">0%</div><div class="stat-label">Overall Accuracy</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-total-time">0m</div><div class="stat-label">Total Time Spent</div></div>
+            </div>
+
+            <!-- Performance Over Time Chart -->
             <div class="card">
-                <h2 class="card-title">📈 Performance Trends</h2>
-                <div class="trend-chart" id="trend-chart">
-                    <!-- Trend bars will be populated by JavaScript -->
+                <h2 class="card-title">Performance Over Time</h2>
+                <canvas id="performance-chart"></canvas>
+            </div>
+
+            <div class="analysis-grid">
+                 <!-- Subject Performance Chart -->
+                <div class="card">
+                    <h2 class="card-title">Subject Performance</h2>
+                    <canvas id="subject-chart"></canvas>
                 </div>
-                <p style="text-align: center; color: var(--muted-foreground); font-size: 0.875rem;">
-                    Last 10 test scores
-                </p>
-            </div>
-
-            <!-- Subject Performance -->
-            <div class="card">
-                <h2 class="card-title">📚 Subject Performance</h2>
-                <div class="subject-performance" id="subject-performance">
-                    <!-- Subject performance will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Weak Areas -->
-            <div class="card">
-                <h2 class="card-title">⚠️ Areas Needing Attention</h2>
-                <ul class="weak-areas" id="weak-areas">
-                    <!-- Weak areas will be populated by JavaScript -->
-                </ul>
-            </div>
-
-            <!-- Peer Comparison -->
-            <div class="card">
-                <h2 class="card-title">👥 Peer Comparison</h2>
-                <div class="comparison-stats" id="comparison-stats">
-                    <!-- Comparison stats will be populated by JavaScript -->
-                </div>
-                <p style="text-align: center; color: var(--muted-foreground); font-size: 0.875rem; margin-top: 1rem;">
-                    Based on similar test takers
-                </p>
-            </div>
-
-            <!-- Study Time Analysis -->
-            <div class="card">
-                <h2 class="card-title">⏰ Study Time Analysis</h2>
-                <div class="comparison-stats">
-                    <div class="comparison-item">
-                        <span class="comparison-value" id="total-study-time">45h</span>
-                        <div class="comparison-label">Total Study Time</div>
-                    </div>
-                    <div class="comparison-item">
-                        <span class="comparison-value" id="avg-session">2.5h</span>
-                        <div class="comparison-label">Avg Session</div>
-                    </div>
-                    <div class="comparison-item">
-                        <span class="comparison-value" id="consistency">85%</span>
-                        <div class="comparison-label">Consistency</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Improvement Suggestions -->
-            <div class="card">
-                <div class="suggestions" id="suggestions">
-                    <h3>💡 Personalized Suggestions</h3>
-                    <ul id="suggestions-list">
-                        <!-- Suggestions will be populated by JavaScript -->
+                <!-- Topics to Improve -->
+                <div class="card">
+                    <h2 class="card-title">Top Areas for Improvement</h2>
+                    <ul class="topics-list" id="topics-list">
+                        <!-- Topics will be dynamically inserted here -->
                     </ul>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <script>
-        // Analytics page functionality
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCQ34ZAWWCMuaQ01fvX0sI-YdklK0mJ5aw",
+          authDomain: "testseries-38752.firebaseapp.com",
+          projectId: "testseries-38752",
+          storageBucket: "testseries-38752.firebasestorage.app",
+          messagingSenderId: "519384534407",
+          appId: "1:519384534407:web:201265a9d703708334d722"
+        };
+      
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
         class AnalyticsPage {
             constructor() {
-                this.analyticsData = null;
-                this.initializeAuth();
-                this.generateAnalyticsData();
-                this.initializeEventListeners();
-                this.displayAnalytics();
+                this.user = null;
+                this.charts = {}; // To hold chart instances
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        this.user = user;
+                        document.getElementById('user-avatar').textContent = (user.displayName || user.email).charAt(0).toUpperCase();
+                        this.fetchAndProcessData();
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                });
             }
 
-            initializeAuth() {
-                const session = localStorage.getItem('examace_session') || 
-                               sessionStorage.getItem('examace_session');
+            async fetchAndProcessData() {
+                const resultsRef = collection(db, "users", this.user.uid, "results");
+                const q = query(resultsRef, orderBy("completedAt", "asc"));
                 
-                if (!session) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
                 try {
-                    this.userData = JSON.parse(session);
-                    this.updateUserInterface();
-                } catch (error) {
-                    console.error('Invalid session data:', error);
-                    window.location.href = 'login.html';
-                }
-            }
+                    const querySnapshot = await getDocs(q);
+                    const results = [];
+                    querySnapshot.forEach(doc => results.push(doc.data()));
 
-            updateUserInterface() {
-                if (this.userData && this.userData.user) {
-                    const userAvatar = document.getElementById('user-avatar');
-                    userAvatar.textContent = this.userData.user.name.charAt(0).toUpperCase();
-                }
-            }
-
-            generateAnalyticsData() {
-                // Generate sample analytics data
-                this.analyticsData = {
-                    performanceTrends: [65, 72, 68, 75, 78, 82, 79, 85, 88, 84],
-                    subjectPerformance: {
-                        'Physics': { score: 78, total: 100, category: 'good' },
-                        'Chemistry': { score: 85, total: 100, category: 'excellent' },
-                        'Mathematics': { score: 72, total: 100, category: 'good' },
-                        'Biology': { score: 45, total: 100, category: 'poor' }
-                    },
-                    weakAreas: [
-                        { topic: 'Organic Chemistry', score: 45 },
-                        { topic: 'Calculus', score: 52 },
-                        { topic: 'Modern Physics', score: 58 },
-                        { topic: 'Genetics', score: 38 }
-                    ],
-                    peerComparison: {
-                        yourAverage: 78,
-                        peerAverage: 72,
-                        topPercentile: 92,
-                        rank: 156
-                    },
-                    studyTime: {
-                        total: 45,
-                        avgSession: 2.5,
-                        consistency: 85
+                    if (results.length === 0) {
+                        this.showNoDataState();
+                        return;
                     }
-                };
-            }
-
-            displayAnalytics() {
-                this.displayPerformanceTrends();
-                this.displaySubjectPerformance();
-                this.displayWeakAreas();
-                this.displayPeerComparison();
-                this.generateSuggestions();
-            }
-
-            displayPerformanceTrends() {
-                const trendChart = document.getElementById('trend-chart');
-                const trends = this.analyticsData.performanceTrends;
-                const maxScore = Math.max(...trends);
-
-                trendChart.innerHTML = trends.map((score, index) => {
-                    const height = (score / maxScore) * 150; // Max height 150px
-                    return `<div class="trend-bar" style="height: ${height}px" data-value="${score}%" title="Test ${index + 1}: ${score}%"></div>`;
-                }).join('');
-            }
-
-            displaySubjectPerformance() {
-                const container = document.getElementById('subject-performance');
-                const subjects = this.analyticsData.subjectPerformance;
-
-                container.innerHTML = Object.entries(subjects).map(([subject, data]) => {
-                    const percentage = (data.score / data.total) * 100;
-                    return `
-                        <div class="subject-item">
-                            <div class="subject-name">${subject}</div>
-                            <div class="subject-score">
-                                <span class="score-value ${data.category}">${data.score}%</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill ${data.category}" style="width: ${percentage}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            displayWeakAreas() {
-                const container = document.getElementById('weak-areas');
-                const weakAreas = this.analyticsData.weakAreas;
-
-                container.innerHTML = weakAreas.map(area => `
-                    <li class="weak-area-item">
-                        <span class="weak-area-name">${area.topic}</span>
-                        <span class="weak-area-score">${area.score}%</span>
-                    </li>
-                `).join('');
-            }
-
-            displayPeerComparison() {
-                const container = document.getElementById('comparison-stats');
-                const comparison = this.analyticsData.peerComparison;
-
-                container.innerHTML = `
-                    <div class="comparison-item">
-                        <span class="comparison-value">${comparison.yourAverage}%</span>
-                        <div class="comparison-label">Your Average</div>
-                    </div>
-                    <div class="comparison-item">
-                        <span class="comparison-value">${comparison.peerAverage}%</span>
-                        <div class="comparison-label">Peer Average</div>
-                    </div>
-                    <div class="comparison-item">
-                        <span class="comparison-value">#${comparison.rank}</span>
-                        <div class="comparison-label">Your Rank</div>
-                    </div>
-                `;
-            }
-
-            generateSuggestions() {
-                const suggestions = [];
-                const subjects = this.analyticsData.subjectPerformance;
-                const weakAreas = this.analyticsData.weakAreas;
-                const comparison = this.analyticsData.peerComparison;
-
-                // Performance-based suggestions
-                if (comparison.yourAverage > comparison.peerAverage) {
-                    suggestions.push('Great job! You\'re performing above average compared to peers.');
-                } else {
-                    suggestions.push('Focus on improving overall performance to match peer average.');
-                }
-
-                // Subject-specific suggestions
-                Object.entries(subjects).forEach(([subject, data]) => {
-                    if (data.category === 'poor') {
-                        suggestions.push(`${subject} needs immediate attention - consider additional practice sessions.`);
-                    } else if (data.category === 'excellent') {
-                        suggestions.push(`Excellent work in ${subject}! Maintain this level of performance.`);
-                    }
-                });
-
-                // Weak area suggestions
-                if (weakAreas.length > 0) {
-                    const weakestArea = weakAreas[0];
-                    suggestions.push(`Focus on ${weakestArea.topic} - it's your weakest area at ${weakestArea.score}%.`);
-                }
-
-                // Study pattern suggestions
-                suggestions.push('Maintain consistent study schedule for better retention.');
-                suggestions.push('Take regular mock tests to track improvement.');
-
-                // Display suggestions
-                const suggestionsList = document.getElementById('suggestions-list');
-                suggestionsList.innerHTML = suggestions.map(suggestion => `<li>${suggestion}</li>`).join('');
-            }
-
-            initializeEventListeners() {
-                // Logout functionality
-                document.getElementById('logout-btn').addEventListener('click', () => {
-                    this.logout();
-                });
-
-                // Add hover effects to trend bars
-                document.querySelectorAll('.trend-bar').forEach(bar => {
-                    bar.addEventListener('mouseenter', () => {
-                        bar.style.transform = 'scale(1.1)';
-                    });
                     
-                    bar.addEventListener('mouseleave', () => {
-                        bar.style.transform = 'scale(1)';
-                    });
+                    this.renderAnalytics(results);
+
+                } catch (error) {
+                    console.error("Error fetching results: ", error);
+                    document.getElementById('loading-state').innerHTML = '<h1>Error loading analytics.</h1>';
+                }
+            }
+
+            renderAnalytics(results) {
+                this.renderOverallStats(results);
+                this.renderPerformanceChart(results);
+                this.renderSubjectChart(results);
+                this.renderTopicsList(results);
+
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('analytics-content').style.display = 'block';
+            }
+            
+            showNoDataState() {
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('no-data-state').style.display = 'block';
+            }
+
+            renderOverallStats(results) {
+                const totalTests = results.length;
+                const totalPercentage = results.reduce((sum, r) => sum + r.percentage, 0);
+                const avgScore = totalTests > 0 ? (totalPercentage / totalTests).toFixed(1) : 0;
+                
+                const totalCorrect = results.reduce((sum, r) => sum + r.correct, 0);
+                const totalIncorrect = results.reduce((sum, r) => sum + r.incorrect, 0);
+                const totalAttempted = totalCorrect + totalIncorrect;
+                const avgAccuracy = totalAttempted > 0 ? (totalCorrect / totalAttempted * 100).toFixed(1) : 0;
+                
+                const totalTime = results.reduce((sum, r) => sum + r.timeTaken, 0);
+                const totalTimeInMinutes = Math.round(totalTime / 60);
+
+                document.getElementById('stat-tests-taken').textContent = totalTests;
+                document.getElementById('stat-avg-score').textContent = `${avgScore}%`;
+                document.getElementById('stat-avg-accuracy').textContent = `${avgAccuracy}%`;
+                document.getElementById('stat-total-time').textContent = `${totalTimeInMinutes}m`;
+            }
+
+            renderPerformanceChart(results) {
+                const ctx = document.getElementById('performance-chart').getContext('2d');
+                if (this.charts.performance) this.charts.performance.destroy();
+                
+                this.charts.performance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: results.map(r => new Date(r.completedAt).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Score Percentage',
+                            data: results.map(r => r.percentage),
+                            borderColor: 'var(--primary)',
+                            backgroundColor: 'rgba(21, 128, 61, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true }
                 });
             }
 
-            logout() {
-                localStorage.removeItem('examace_session');
-                sessionStorage.removeItem('examace_session');
-                window.location.href = 'login.html';
+            renderSubjectChart(results) {
+                const subjectData = {};
+                results.forEach(result => {
+                    for (const subjectName in result.subjectWise) {
+                        if (!subjectData[subjectName]) {
+                            subjectData[subjectName] = { correct: 0, incorrect: 0 };
+                        }
+                        subjectData[subjectName].correct += result.subjectWise[subjectName].correct;
+                        subjectData[subjectName].incorrect += result.subjectWise[subjectName].incorrect;
+                    }
+                });
+
+                const labels = Object.keys(subjectData);
+                const accuracies = labels.map(label => {
+                    const { correct, incorrect } = subjectData[label];
+                    const attempted = correct + incorrect;
+                    return attempted > 0 ? (correct / attempted * 100) : 0;
+                });
+                
+                const ctx = document.getElementById('subject-chart').getContext('2d');
+                if (this.charts.subject) this.charts.subject.destroy();
+
+                this.charts.subject = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Average Accuracy %',
+                            data: accuracies,
+                            backgroundColor: 'var(--primary)',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: { y: { beginAtZero: true, max: 100 } },
+                        indexAxis: 'y'
+                    }
+                });
+            }
+
+            renderTopicsList(results) {
+                const topicCounts = {};
+                results.forEach(result => {
+                    if (result.incorrectTopics) {
+                        result.incorrectTopics.forEach(topic => {
+                            topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                        });
+                    }
+                });
+
+                const sortedTopics = Object.entries(topicCounts).sort(([,a],[,b]) => b - a);
+                const container = document.getElementById('topics-list');
+                container.innerHTML = '';
+
+                if (sortedTopics.length === 0) {
+                     container.innerHTML = '<li>No specific weak topics found. Great job!</li>';
+                     return;
+                }
+
+                sortedTopics.slice(0, 7).forEach(([topic, count]) => { // Show top 7
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="topic-name">${topic}</span><span class="topic-count">${count} incorrect</span>`;
+                    container.appendChild(li);
+                });
             }
         }
 
-        // Initialize analytics page when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new AnalyticsPage();
-        });
+        new AnalyticsPage();
     </script>
 </body>
 </html>

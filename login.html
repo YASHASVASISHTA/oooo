@@ -224,7 +224,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-      
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         const firebaseConfig = {
           apiKey: "AIzaSyCQ34ZAWWCMuaQ01fvX0sI-YdklK0mJ5aw",
           authDomain: "testseries-38752.firebaseapp.com",
@@ -237,6 +238,7 @@
       
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // --- AUTHENTICATION LOGIC ---
 
@@ -264,23 +266,28 @@
 
             setLoadingState(true);
 
-            // Set persistence BEFORE signing in
             setPersistence(auth, persistenceType)
                 .then(() => {
-                    // Now, sign in the user
                     return signInWithEmailAndPassword(auth, email, password);
                 })
-                .then((userCredential) => {
+                .then(async (userCredential) => {
                     const user = userCredential.user;
-                    // Create a simple session object for compatibility with other pages
-                    const sessionData = {
-                        user: {
-                            email: user.email,
+                    const userRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(userRef);
+
+                    if (!docSnap.exists()) {
+                        // Create a new document for the new user if it doesn't exist
+                        await setDoc(userRef, {
                             name: user.displayName || user.email.split('@')[0],
-                            uid: user.uid
-                        }
-                    };
-                    sessionStorage.setItem('examace_session', JSON.stringify(sessionData));
+                            email: user.email,
+                            createdAt: serverTimestamp(),
+                            phone: '',
+                            targetExam: 'jee',
+                            studyGoal: 2,
+                        });
+                        console.log("New user document created in Firestore.");
+                    }
+                    
                     window.location.href = 'dashboard.html';
                 })
                 .catch((error) => {
@@ -344,3 +351,4 @@
     </script>
 </body>
 </html>
+
